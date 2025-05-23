@@ -1,0 +1,17 @@
+{% extends 'crm/base.html' %}
+
+{% block title %}User Profile{% endblock %}
+
+{% block content %}
+<h1>
+    Sign Up
+</h1>
+    <form method="post" action="."> 
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Sign Up</button>
+    </form>
+
+
+
+{% endblock %}

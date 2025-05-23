@@ -1,0 +1,58 @@
+{% extends 'crm/base.html' %}
+
+{% block title %}Lead List{% endblock %}
+
+{% block content %}
+<!-- Optional: Custom color style if you prefer #003366 -->
+<style>
+    .bg-deep-blue {
+        background-color: #003366 !important;
+        color: white !important;
+    }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h4 fw-semibold mb-0">Lead List</h1>
+    <a class="btn btn-outline-primary btn-sm" href="{% url 'addlead' %}">+ Add Lead</a>
+</div>
+
+{% if leads %}
+    <div class="table-responsive shadow-sm rounded border">
+        <table class="table table-hover table-striped mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Priority</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Created By</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lead in leads %}
+                    <tr>
+                        <th scope="row">{{ forloop.counter }}</th>
+                        <td><a href="{% url 'lead_details' lead.id %}">{{ lead.name }}</a></td>
+
+                        <td>{{ lead.get_status_display }}</td>
+                        
+                        <!-- Highlight Medium priority -->
+                        <td class="{% if lead.get_priority_display == 'Medium' %}bg-primary text-white{% endif %}">
+                            {{ lead.get_priority_display }}
+                        </td>
+
+                        
+                        <td>{{ lead.email }}</td>
+                        <td>{{ lead.created_by }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="alert alert-light border text-center" role="alert">
+        No leads found.
+    </div>
+{% endif %}
+{% endblock %}

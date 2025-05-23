@@ -1,0 +1,20 @@
+{% extends 'crm/base.html' %}
+
+{% block title %}Add Lead{% endblock %}
+
+{% block content %}
+<h1>Add Lead Details</h1>
+
+<p>Current leads: {{ team.leads.all|length }} / Max leads allowed: {{ team.plan.max_leads }}</p>
+
+<form method="post" action=".">
+    {% csrf_token %}
+    {% if team.leads.all|length < team.plan.max_leads %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Submit</button>
+    {% else %}
+        <p>You have reached your limit.</p>
+    {% endif %}
+</form>
+
+{% endblock %}

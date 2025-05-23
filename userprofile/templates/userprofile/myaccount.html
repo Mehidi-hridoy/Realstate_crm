@@ -1,0 +1,41 @@
+{% extends 'crm/base.html' %}
+
+{% block title %}
+    My Account - {{ request.user.get_full_name }}
+{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">
+        My Account: {{ request.user.get_full_name }} ({{ request.user.username }})
+    </h1>
+
+    <div class="card p-4 mb-4 shadow-sm">
+        <h4 class="mb-3">User Information</h4>
+        <ul class="list-unstyled">
+            <li><strong>Username:</strong> {{ request.user.username }}</li>
+            <li><strong>Team:</strong> {{ team.name }}</li>
+
+            {% if team.created_by == request.user %}
+                <li>
+                    <strong>Team Actions:</strong>
+                    <a href="{% url 'edit_team' team.id %}" class="btn btn-sm btn-outline-primary ml-2">Edit</a>
+                </li>
+            {% endif %}
+
+            <li><strong>Email:</strong> {{ request.user.email }}</li>
+            <li><strong>Full Name:</strong> {{ request.user.get_full_name }}</li>
+            <li><strong>Last Login:</strong> {{ request.user.last_login }}</li>
+            <li><strong>Date Joined:</strong> {{ request.user.date_joined }}</li>
+
+            <li><strong>Account Status:</strong> 
+                {% if request.user.is_active %}
+                    <span class="text-success">Active</span>
+                {% else %}
+                    <span class="text-danger">Locked / Inactive</span>
+                {% endif %}
+            </li>
+        </ul>
+    </div>
+
+    <a class="btn btn-danger btn-sm" href="{% url 'logout' %}?next=/">Log Out</a>
+{% endblock %}

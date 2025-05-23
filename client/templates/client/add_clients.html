@@ -1,0 +1,23 @@
+{% extends 'crm/base.html' %}
+
+{% block title %}Add Client{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-3">Add Client Details</h1>
+
+   
+
+    {% if client.leads.all|length >= client.plan.max_leads %}
+        <div class="alert alert-danger" role="alert">
+            You have reached your maximum number of leads allowed for this plan.
+        </div>
+    {% else %}
+        <form method="post" action=".">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}

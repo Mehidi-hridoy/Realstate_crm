@@ -1,0 +1,47 @@
+{% extends 'crm/base.html' %}
+
+{% block title %}Client Details{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ client.name }}</h1>
+    </div>
+
+    {% if client.description %}
+        <div class="mb-3">
+            <strong>Description:</strong>
+            <p>{{ client.description }}</p>
+        </div>
+    {% endif %}
+
+    <div class="mb-3">
+        <strong>Priority:</strong>
+        <p>{{ client.get_priority_display }}</p>
+    </div>
+
+    <div class="mb-3">
+        <strong>Status:</strong>
+        <p>{{ client.get_status_display }}</p>
+    </div>
+
+    <div class="mb-3">
+        <strong>Created At:</strong>
+        <p>{{ client.created_at }}</p>
+    </div>
+
+    <div class="mb-3">
+        <strong>Last Modified:</strong>
+        <p>{{ client.modified_at }}</p>
+    </div>
+    <a href="{% url 'client_delete' client.id %}" class="btn btn-danger">Delete</a>
+
+    <hr>
+    <a href="{% url 'client_edit' client.id %}" class="btn btn-success">Edit</a>
+
+    <hr>
+    <a href="{% url 'client_list' %}" class="btn btn-secondary">Back to List</a>
+
+</div>
+{% endblock %}
