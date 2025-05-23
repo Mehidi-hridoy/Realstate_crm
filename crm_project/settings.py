@@ -22,6 +22,9 @@ LOGIN_REDIRECT_URL='/dashboard/'
 LOGIN_URL='login'
 LOGOUT_REDIRECT_URL='index'
 
+CSRF_TRUSTED_ORIGINS = ['https://realstate-crm-7.onrender.com']
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -43,11 +46,12 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',  # This line
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
 
 ROOT_URLCONF = 'crm_project.urls'
 
@@ -69,6 +73,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'crm_project.wsgi.application'
 ALLOWED_HOSTS = ['realstate-crm-7.onrender.com', 'localhost', '127.0.0.1']
+
 
 
 
