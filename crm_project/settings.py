@@ -68,6 +68,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'crm_project.wsgi.application'
+ALLOWED_HOSTS = ['realstate-crm-7.onrender.com', 'localhost', '127.0.0.1']
+
 
 
 # Database
