@@ -5,6 +5,22 @@
 {% endblock %}
 
 {% block content %}
+<div class="container mt-5 position-relative overflow-hidden" style="min-height: 60vh;">
+
+  <!-- Vector background container with absolute positioning behind content -->
+  <div id="vector-background" class="position-absolute top-0 start-0 w-100 h-100" 
+       style="z-index: 0; pointer-events: none; opacity: 0.1;">
+    <svg class="position-absolute top-0 start-0" style="width: 220px; height: 220px;" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="110" cy="110" r="110" fill="#0d6efd"/>
+    </svg>
+
+    <svg class="position-absolute bottom-0 end-0" style="width: 180px; height: 180px;" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="180" height="180" rx="35" fill="#0d6efd"/>
+    </svg>
+  </div>
+
+  <!-- Main content with higher z-index -->
+  <div style="position: relative; z-index: 10;">
     <h1 class="mb-4">
         My Account: {{ request.user.get_full_name }} ({{ request.user.username }})
     </h1>
@@ -38,4 +54,7 @@
     </div>
 
     <a class="btn btn-danger btn-sm" href="{% url 'logout' %}?next=/">Log Out</a>
+  </div>
+
+</div>
 {% endblock %}

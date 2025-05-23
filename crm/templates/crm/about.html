@@ -1,19 +1,62 @@
 {% extends 'crm/base.html' %}
 
-{% block title %}CRM About{% endblock %}
+{% block title %}About RealEstate CRM{% endblock %}
 
 {% block content %}
-<h1>
-    About Us
-    <small class="text-muted">Learn more about our CRM App</small>
-</h1>   
-<p>
-    The CRM App is designed to help businesses manage their customer relationships effectively. 
-    With features like contact management, sales tracking, and reporting, it provides a comprehensive solution for your CRM needs.
-</p>
-<p>
-    Our mission is to empower businesses with the tools they need to build strong relationships with their customers.   
-    We believe that effective communication and organization are key to success in any business.
-</p>
+<div class="container mt-5 position-relative overflow-hidden" style="min-height: 60vh;">
+  <div class="text-center py-5 position-relative" style="z-index: 10;">
+    <h1 class="display-4 fw-bold mb-3">
+      About <span class="text-primary">RealEstate CRM</span>
+    </h1>
+    <small class="text-muted fs-5">Learn more about our CRM App</small>
 
+    <!-- Decorative SVG line -->
+    <svg width="140" height="12" class="mx-auto my-4" viewBox="0 0 140 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <line x1="0" y1="6" x2="140" y2="6" stroke="#0d6efd" stroke-width="4" stroke-linecap="round" />
+    </svg>
+
+    <p class="lead fw-light mb-4 px-3 px-md-5">
+      Our CRM App is expertly crafted to help real estate professionals and businesses manage customer relationships seamlessly. From contact management and property tracking to sales pipelines and detailed reporting — we've built a powerful yet intuitive solution tailored for your real estate needs.
+    </p>
+
+    <p class="lead fw-light mb-4 px-3 px-md-5">
+      Our mission is to empower you to build meaningful, long-lasting relationships with your clients by streamlining communication, organization, and sales management — all within one clean, modern platform.
+    </p>
+
+    <div class="d-flex justify-content-center gap-5 flex-wrap mt-5">
+      <!-- Feature 1: Easy Property Management -->
+      <div class="text-primary text-center" style="max-width: 140px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="mb-2" viewBox="0 0 16 16">
+          <path d="M8.354 1.146a.5.5 0 0 0-.708 0L1 7.793V14.5A1.5 1.5 0 0 0 2.5 16h3a.5.5 0 0 0 .5-.5V11a1 1 0 0 1 2 0v4.5a.5.5 0 0 0 .5.5h3A1.5 1.5 0 0 0 15 14.5V7.793l-6.646-6.647z"/>
+        </svg>
+        <h6>Easy Property Management</h6>
+      </div>
+
+      <!-- Feature 2: Client Communication -->
+      <div class="text-primary text-center" style="max-width: 140px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="mb-2" viewBox="0 0 16 16">
+          <path d="M3 2a1 1 0 0 0-1 1v7.5a1.5 1.5 0 0 0 3 0V4a1 1 0 0 0-1-1H3zm5 3a1 1 0 0 0-1 1v6.5a1.5 1.5 0 0 0 3 0V6a1 1 0 0 0-1-1H8zm5 4a1 1 0 0 0-1 1v2.5a1.5 1.5 0 0 0 3 0V10a1 1 0 0 0-1-1h-1z"/>
+        </svg>
+        <h6>Client Communication</h6>
+      </div>
+
+      <!-- Feature 3: Detailed Reporting -->
+      <div class="text-primary text-center" style="max-width: 140px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="mb-2" viewBox="0 0 16 16">
+          <path d="M3 0h10a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V1a1 1 0 0 1 1-1zm1 3v2h1V3H4zm3 0v2h1V3H7zm3 0v2h1V3h-1z"/>
+        </svg>
+        <h6>Detailed Reporting</h6>
+      </div>
+    </div>
+  </div>
+
+  <!-- Background vector shapes -->
+  <svg class="position-absolute top-0 start-0 opacity-15" style="width: 220px; height: 220px; z-index: 1;" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="110" cy="110" r="110" fill="#0d6efd"/>
+  </svg>
+
+  <svg class="position-absolute bottom-0 end-0 opacity-15" style="width: 180px; height: 180px; z-index: 1;" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="180" height="180" rx="35" fill="#0d6efd"/>
+  </svg>
+</div>
 {% endblock %}
