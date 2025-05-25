@@ -42,36 +42,40 @@
                         <a class="btn btn-outline-primary btn-sm" href="{% url 'about' %}">About</a>
                     </li>
                     {% if request.user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="btn btn-outline-primary btn-sm" href="{% url 'dashboard' %}">Dashboard</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-outline-primary btn-sm" href="{% url 'addlead' %}">Add Lead</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-outline-primary btn-sm" href="{% url 'nadira' %}">Nadinum</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-outline-primary btn-sm" href="{% url 'leads_list' %}">All Leads</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-outline-primary btn-sm" href="{% url 'client_list' %}">Clients List</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-outline-danger btn-sm" href="{% url 'myaccount' %}">My Account</a>
-                        </li>
-                       
-                        <li class="nav-item">
-                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'admin:index' %}">Admin</a>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="btn btn-outline-success btn-sm" href="{% url 'signup' %}">Sign Up</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-outline-primary btn-sm" href="{% url 'login' %}">Log In</a>
-                        </li>
-                    {% endif %}
+                      <li class="nav-item">
+                          <a class="btn btn-outline-primary btn-sm" href="{% url 'dashboard' %}">Dashboard</a>
+                      </li>
+                      <li class="nav-item">
+                          <a class="btn btn-outline-primary btn-sm" href="{% url 'addlead' %}">Add Lead</a>
+                      </li>
+                      {% if request.user.username == "CRM" %}
+                      <li class="nav-item">
+                          <a class="btn btn-outline-primary btn-sm" href="{% url 'nadira' %}">Nadinum</a>
+                      </li>
+                      {% endif %}
+                      <li class="nav-item">
+                          <a class="btn btn-outline-primary btn-sm" href="{% url 'leads_list' %}">All Leads</a>
+                      </li>
+                      <li class="nav-item">
+                          <a class="btn btn-outline-primary btn-sm" href="{% url 'client_list' %}">Clients List</a>
+                      </li>
+                      <li class="nav-item">
+                          <a class="btn btn-outline-danger btn-sm" href="{% url 'myaccount' %}">My Account</a>
+                      </li>
+                      <li class="nav-item">
+                          <a class="btn btn-outline-secondary btn-sm" href="{% url 'admin:index' %}">Admin</a>
+                      </li>
+                  {% else %}
+                      <li class="nav-item">
+                          <a class="btn btn-outline-success btn-sm" href="{% url 'signup' %}">Sign Up</a>
+                      </li>
+                      <li class="nav-item">
+                          <a class="btn btn-outline-primary btn-sm" href="{% url 'login' %}">Log In</a>
+                      </li>
+                  {% endif %}
+
+
+
                 </ul>
             </div>
         </div>
