@@ -1,4 +1,5 @@
 {% extends 'crm/base.html' %}
+{% load static %}
 
 {% block title %}
     A Radiant Soul
@@ -7,21 +8,25 @@
 {% block content %}
 <div class="appreciation-page">
     <!-- Golden Floral Header -->
-    <div class="header-pattern text-center py-5 mb-5">
-        <div class="container">
-            <h1 class="display-3 golden-text">Nadira Tarannum</h1>
-            <p class="lead golden-text">A Light That Illuminates Every Space She Enters</p>
-        </div>
+    <div class="header-pattern text-center py-0 mb-2">
+       <div class="container text-center my-5">
+          <h1 class="love-typing">
+              <span class="text-content">💖 Nadira Tarannum 💖</span>
+          </h1>
+          <p class="love-subtitle">A Light That Illuminates Every Space She Enters</p>
+       </div>
     </div>
 
     <!-- Main Content -->
-    <div class="container mb-5">
+    <div class="container mb-1">
         <div class="row align-items-center">
             <!-- Profile Image Section -->
             <div class="col-lg-5 text-center mb-4 mb-lg-0">
                 <div class="profile-frame mx-auto position-relative" style="max-width:400px;">
                     <div class="golden-border position-absolute top-0 start-0 w-100 h-100" style="transform: rotate(2deg); border: 3px solid #b8860b; z-index:1;"></div>
-                    <img src="https://scontent.fdac19-1.fna.fbcdn.net/v/t39.30808-6/498019657_1244602697668660_8680118381227863209_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=833d8c&_nc_eui2=AeHotyiN8nNoDqtlLBgO7msrzAoJH56dAKfMCgkfnp0Ap2lVnhSh2tYKdyNyvF36o_mP_cUNi4O3k8PZfogLjnEh&_nc_ohc=K-BjRpa13igQ7kNvwEpgmRV&_nc_oc=AdkSTPVn_fDtn6cH6K5YRoEYFdy-70nhRBSFUjdy5Xmw3GYWMkNzabC-fwWWEuKfmCE&_nc_zt=23&_nc_ht=scontent.fdac19-1.fna&_nc_gid=45Wcb5nt_b_eVHYb4cH6CA&oh=00_AfLemDhCNI6pnXabp6fPJWUmNF82_fneyt__F8tZUoempQ&oe=68367E51" alt="Nadira Tarannum" class="profile-img img-fluid rounded shadow" style="position:relative; z-index:2;">
+                    <img src="{% static 'images/nadi.jpg' %}" alt="Nadira Tarannum" 
+                    class="profile-img img-fluid rounded shadow" 
+                    style="position:relative; z-index:2;">
                     <div class="decorative-corner top-left position-absolute" style="top:0; left:0; width:40px; height:40px; background: url('https://www.transparenttextures.com/patterns/golden-corner.png') no-repeat; background-size:contain; z-index:3;"></div>
                     <div class="decorative-corner top-right position-absolute" style="top:0; right:0; width:40px; height:40px; background: url('https://www.transparenttextures.com/patterns/golden-corner.png') no-repeat; background-size:contain; transform: rotate(90deg); z-index:3;"></div>
                     <div class="decorative-corner bottom-left position-absolute" style="bottom:0; left:0; width:40px; height:40px; background: url('https://www.transparenttextures.com/patterns/golden-corner.png') no-repeat; background-size:contain; transform: rotate(270deg); z-index:3;"></div>

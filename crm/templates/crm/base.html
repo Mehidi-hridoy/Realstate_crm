@@ -1,162 +1,117 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>{% block title %}CRM{% endblock %}</title>
-    <!-- Bootstrap 5 CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            font-family: "Segoe UI", Roboto, sans-serif;
-            background-color: #f8f9fa;
-        }
-        .navbar {
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        }
-        .navbar .btn {
-            padding: 4px 12px;
-            font-size: 0.85rem;
-            border-radius: 0.375rem;
-        }
-        .container h1, .container h3 {
-            color: #333;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}CRM{% endblock %}</title>
+  <!-- Bootstrap 5 CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
 </head>
 <body>
-    <!-- Minimal Top Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom py-2">
-        <div class="container">
-            <a class="navbar-brand fw-semibold text-primary" href="{% url 'index' %}">CRM App</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
-                aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
-                <ul class="navbar-nav gap-2">
-                    <li class="nav-item">
-                        <a class="btn btn-outline-primary btn-sm" href="{% url 'index' %}">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="btn btn-outline-primary btn-sm" href="{% url 'about' %}">About</a>
-                    </li>
-                    {% if request.user.is_authenticated %}
-                      <li class="nav-item">
-                          <a class="btn btn-outline-primary btn-sm" href="{% url 'dashboard' %}">Dashboard</a>
-                      </li>
-                      <li class="nav-item">
-                          <a class="btn btn-outline-primary btn-sm" href="{% url 'addlead' %}">Add Lead</a>
-                      </li>
-                    {% if request.user.username == "CRM" or request.user.username == "Nadira" %}
-                        <li class="nav-item">
-                            <a class="btn btn-outline-primary btn-sm" href="{% url 'nadira' %}">Nadira Tarannum</a>
-                        </li>
-                    {% endif %}
-
-
-                      <li class="nav-item">
-                          <a class="btn btn-outline-primary btn-sm" href="{% url 'leads_list' %}">All Leads</a>
-                      </li>
-                      <li class="nav-item">
-                          <a class="btn btn-outline-primary btn-sm" href="{% url 'client_list' %}">Clients List</a>
-                      </li>
-                      <li class="nav-item">
-                          <a class="btn btn-outline-danger btn-sm" href="{% url 'myaccount' %}">My Account</a>
-                      </li>
-                      <li class="nav-item">
-                          <a class="btn btn-outline-secondary btn-sm" href="{% url 'admin:index' %}">Admin</a>
-                      </li>
-                  {% else %}
-                      <li class="nav-item">
-                          <a class="btn btn-outline-success btn-sm" href="{% url 'signup' %}">Sign Up</a>
-                      </li>
-                      <li class="nav-item">
-                          <a class="btn btn-outline-primary btn-sm" href="{% url 'login' %}">Log In</a>
-                      </li>
-                  {% endif %}
-
-
-
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    {% if messages %}
-    <div>
-        {% for message in messages %}
-            <div class="alert alert-info">
-                {{ message }}
-            </div>
-        {% endfor %}
-        </div>
-        {% endif %}
-<div class="container mt-5 position-relative overflow-hidden" style="min-height: 60vh;">
-  {% block content %}
-  <div class="text-center py-5 position-relative" style="z-index: 10;">
-    <h1 class="display-4 fw-bold mb-3">
-      Welcome to the <span class="text-primary">RealEstate CRM</span> by <strong>Mehidi Hasan <span class="text-primary"> Hridoy</span></strong>
-    </h1>
-    
-    <!-- Decorative SVG line under heading -->
-    <svg width="140" height="12" class="mx-auto mb-4" viewBox="0 0 140 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <line x1="0" y1="6" x2="140" y2="6" stroke="#0d6efd" stroke-width="4" stroke-linecap="round" />
-    </svg>
-
-    <p class="lead fw-light mb-4">
-      Streamline your property leads and client management with ease and confidence.
-    </p>
-    
-    <a href="{% url 'dashboard' %}" class="btn btn-outline-primary btn-lg mb-5">
-      Go to Dashboard
-    </a>
-
-    <!-- Icons row -->
-    <div class="d-flex justify-content-center gap-5 flex-wrap">
-      <!-- House Icon -->
-      <div class="text-primary text-center" style="max-width: 120px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="mb-2" viewBox="0 0 16 16">
-          <path d="M8.354 1.146a.5.5 0 0 0-.708 0L1 7.793V14.5A1.5 1.5 0 0 0 2.5 16h3a.5.5 0 0 0 .5-.5V11a1 1 0 0 1 2 0v4.5a.5.5 0 0 0 .5.5h3A1.5 1.5 0 0 0 15 14.5V7.793l-6.646-6.647z"/>
-        </svg>
-        <h6>Properties</h6>
-        <p class="small text-muted">Manage listings efficiently</p>
-      </div>
-
-      <!-- Location Pin Icon -->
-      <div class="text-primary text-center" style="max-width: 120px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="mb-2" viewBox="0 0 16 16">
-          <path d="M8 0a5 5 0 0 0-5 5c0 4.5 5 11 5 11s5-6.5 5-11a5 5 0 0 0-5-5zM8 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/>
-        </svg>
-        <h6>Locations</h6>
-        <p class="small text-muted">Track properties by area</p>
-      </div>
-
-      <!-- Document Icon -->
-      <div class="text-primary text-center" style="max-width: 120px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="mb-2" viewBox="0 0 16 16">
-          <path d="M4 0h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2zM4 1a1 1 0 0 0-1 1v1h10V2a1 1 0 0 0-1-1H4zm0 4v7h8V5H4z"/>
-        </svg>
-        <h6>Leads & Clients</h6>
-        <p class="small text-muted">Organize contacts & deals</p>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom py-2">
+    <div class="container">
+      <a class="navbar-brand fw-semibold text-primary" href="{% url 'index' %}">CRM App</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+        aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
+        <ul class="navbar-nav gap-2">
+          <li class="nav-item">
+            <a class="btn btn-outline-primary btn-sm" href="{% url 'index' %}">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-outline-primary btn-sm" href="{% url 'about' %}">About</a>
+          </li>
+          {% if request.user.is_authenticated %}
+            <li class="nav-item">
+              <a class="btn btn-outline-primary btn-sm" href="{% url 'dashboard' %}">Dashboard</a>
+            </li>
+            <li class="nav-item">
+              <a class="btn btn-outline-primary btn-sm" href="{% url 'addlead' %}">Add Lead</a>
+            </li>
+            {% if request.user.username == "CRM" or request.user.username == "Nadira" %}
+              <li class="nav-item">
+                <a class="btn btn-outline-primary btn-sm" href="{% url 'nadira' %}">Nadira Tarannum</a>
+              </li>
+            {% endif %}
+            <li class="nav-item">
+              <a class="btn btn-outline-primary btn-sm" href="{% url 'leads_list' %}">All Leads</a>
+            </li>
+            <li class="nav-item">
+              <a class="btn btn-outline-primary btn-sm" href="{% url 'client_list' %}">Clients List</a>
+            </li>
+            <li class="nav-item">
+              <a class="btn btn-outline-danger btn-sm" href="{% url 'myaccount' %}">My Account</a>
+            </li>
+            <li class="nav-item">
+              <a class="btn btn-outline-secondary btn-sm" href="{% url 'admin:index' %}">Admin</a>
+            </li>
+          {% else %}
+            <li class="nav-item">
+              <a class="btn btn-outline-success btn-sm" href="{% url 'signup' %}">Sign Up</a>
+            </li>
+            <li class="nav-item">
+              <a class="btn btn-outline-primary btn-sm" href="{% url 'login' %}">Log In</a>
+            </li>
+          {% endif %}
+        </ul>
       </div>
     </div>
+  </nav>
+
+  <!-- Messages -->
+  {% if messages %}
+    <div>
+      {% for message in messages %}
+        <div class="alert alert-info">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Main Content -->
+  <div class="container mt-5 position-relative overflow-hidden" style="min-height: 60vh; z-index: 0;">
+    {% block content %}
+      <!-- Decorative background shapes -->
+      <svg class="svg-bg top-0 start-0" style="width: 220px; height: 220px;" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="110" cy="110" r="110" fill="#0d6efd"/>
+      </svg>
+      <svg class="svg-bg bottom-0 end-0" style="width: 180px; height: 180px;" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="180" height="180" rx="35" fill="#0d6efd"/>
+      </svg>
+
+      <!-- Content section -->
+      <div class="text-center py-0 position-relative" style="z-index: 10;">
+        <h1 class="display-4 fw-bold mb-0 py-0">
+          Welcome to the <span class="text-primary">RealEstate CRM</span> by
+          <strong><br>
+            <span class="gradient-text">Mehidi Hasan</span>
+            <span class="typing gradient-text">(Hridoy)</span>
+          </strong>
+        </h1>
+        <svg width="140" height="12" class="mx-auto mb-4" viewBox="0 0 140 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="0" y1="6" x2="140" y2="6" stroke="#0d6efd" stroke-width="4" stroke-linecap="round" />
+        </svg>
+        <p class="lead fw-light mb-4">
+          Streamline your property leads and client management with ease and confidence.
+        </p>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-primary btn-lg mb-5">
+          Go to Dashboard
+        </a>
+        <!-- Icons row -->
+        <div class="d-flex justify-content-center gap-5 flex-wrap">
+          <!-- Optional: Add icons here -->
+        </div>
+      </div>
+    {% endblock %}
   </div>
 
-  <!-- Vector-style background shapes -->
-  <svg class="position-absolute top-0 start-0 opacity-15" style="width: 220px; height: 220px; z-index: 1;" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="110" cy="110" r="110" fill="#0d6efd"/>
-  </svg>
-
-  <svg class="position-absolute bottom-0 end-0 opacity-15" style="width: 180px; height: 180px; z-index: 1;" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="180" height="180" rx="35" fill="#0d6efd"/>
-  </svg>
-  {% endblock %}
-</div>
-
-
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

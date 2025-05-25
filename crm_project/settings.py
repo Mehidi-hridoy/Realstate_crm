@@ -129,9 +129,15 @@ USE_TZ = True
 LOGIN_REDIRECT_URL = 'index'
 LOGOUT_REDIRECT_URL = '/'
 
-
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Optional but recommended
+STATICFILES_DIRS = [
+    BASE_DIR / 'crm' / "static",  # if you have a global static folder
+]
+
+# For production (optional)
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
 # Default primary key field type

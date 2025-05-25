@@ -1,11 +1,12 @@
 {% extends 'crm/base.html' %}
+{% load static %}
 
 {% block title %}
     Dashboard
 {% endblock %}
 
 {% block content %}
-<div class="container py-4 position-relative overflow-hidden" style="min-height: 60vh;">
+<div class="container position-relative overflow-hidden" style="min-height: 60vh;">
 
   <!-- Vector background container -->
   <div id="vector-background" class="position-absolute top-0 start-0 w-100 h-100" 
@@ -20,10 +21,12 @@
   </div>
 
   <!-- Main dashboard content with higher z-index -->
-  <div style="position: relative; z-index: 10;">
-    <h1 class="mb-4 fw-bold">Dashboard</h1>
+  <div style="position: relative; z-index: 8;">
+   <h1 class="mb-4 fw-bold dashboard-heading">Dashboard</h1>
 
-    <div class="row mb-5">
+
+
+    <div class="row mb-10">
       <!-- Lead Status Summary -->
       <div class="col-md-6">
         <h3 class="mb-3">Lead Status Summary</h3>
