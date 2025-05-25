@@ -33,7 +33,7 @@ def add_client(request):
             team=Team.objects.filter(created_by=request.user)[0]
             client = form.save(commit=False)
             client.created_by = request.user
-            client.team=Team    
+            client.team=team
             client.save()
             messages.success(request, 'The client has created successfully.')
             return redirect('dashboard')

@@ -6,8 +6,9 @@ from django.contrib.auth.models import User
 class Plan(models.Model):
     name = models.CharField(max_length=100)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    max_leads = models.IntegerField() # type: ignore
-    max_clients = models.IntegerField()
+    max_leads = models.IntegerField(default=100)
+    max_clients = models.IntegerField(default=50)
+
 
 
     def __str__ (self):
