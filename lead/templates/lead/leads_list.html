@@ -3,56 +3,100 @@
 {% block title %}Lead List{% endblock %}
 
 {% block content %}
-<!-- Optional: Custom color style if you prefer #003366 -->
 <style>
     .bg-deep-blue {
         background-color: #003366 !important;
         color: white !important;
     }
+    input.filter-input {
+        width: 100%;
+        font-size: 0.8rem;
+        padding: 2px 4px;
+        box-sizing: border-box;
+    }
 </style>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h4 fw-semibold mb-0">Lead List</h1>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 fw-semibold mb-0">
+        Lead List {% if total_leads is not None %}({{ total_leads }}){% endif %}
+    </h1>
     <a class="btn btn-outline-primary btn-sm" href="{% url 'addlead' %}">+ Add Lead</a>
 </div>
 
+<!-- Filtered Count Card -->
+<div class="card mb-3">
+    <div class="card-body p-2">
+        <strong>Filtered Leads:</strong> <span id="filteredCount">{{ leads|length }}</span>
+    </div>
+</div>
+
 {% if leads %}
-    <div class="table-responsive shadow-sm rounded border">
-        <table class="table table-hover table-striped mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Priority</th>
-                    <th scope="col">Email</th>
-                    <th scope="col">Created By</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for lead in leads %}
-                    <tr>
-                        <th scope="row">{{ forloop.counter }}</th>
-                        <td><a href="{% url 'lead_details' lead.id %}">{{ lead.name }}</a></td>
-
-                        <td>{{ lead.get_status_display }}</td>
-                        
-                        <!-- Highlight Medium priority -->
-                        <td class="{% if lead.get_priority_display == 'Medium' %}bg-primary text-white{% endif %}">
-                            {{ lead.get_priority_display }}
-                        </td>
-
-                        
-                        <td>{{ lead.email }}</td>
-                        <td>{{ lead.created_by }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+<div class="table-responsive shadow-sm rounded border">
+    <table class="table table-hover table-striped mb-0" id="leadTable">
+        <thead class="table-dark">
+            <tr>
+                <th>ID<br><input type="text" class="filter-input" onkeyup="filterColumn(1, this.value)" placeholder="Filter ID"></th>
+                <th>Name<br><input type="text" class="filter-input" onkeyup="filterColumn(2, this.value)" placeholder="Filter Name"></th>
+                <th>Number<br><input type="text" class="filter-input" onkeyup="filterColumn(3, this.value)" placeholder="Filter Number"></th>
+                <th>Created By<br><input type="text" class="filter-input" onkeyup="filterColumn(4, this.value)" placeholder="Filter Creator"></th>
+                <th>Created Date<br><input type="text" class="filter-input" onkeyup="filterColumn(5, this.value)" placeholder="Filter Date"></th>
+                <th>Team Leader<br><input type="text" class="filter-input" onkeyup="filterColumn(6, this.value)" placeholder="Filter Team Leader"></th>
+                <th>Lead Source<br><input type="text" class="filter-input" onkeyup="filterColumn(7, this.value)" placeholder="Filter Source"></th>
+                <th>Sub Source<br><input type="text" class="filter-input" onkeyup="filterColumn(8, this.value)" placeholder="Filter Sub Source"></th>
+                <th>Budget<br><input type="text" class="filter-input" onkeyup="filterColumn(9, this.value)" placeholder="Filter Budget"></th>
+                <th>Stage<br><input type="text" class="filter-input" onkeyup="filterColumn(10, this.value)" placeholder="Filter Stage"></th>
+                <th>Email<br><input type="text" class="filter-input" onkeyup="filterColumn(11, this.value)" placeholder="Filter Email"></th>
+                
+                <th>Next Follow-Up<br><input type="text" class="filter-input" onkeyup="filterColumn(13, this.value)" placeholder="Filter Date"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for lead in leads %}
+            <tr>
+                <td>{{ lead.unique_id }}</td>
+                <td><a href="{% url 'lead_details' lead.id %}">{{ lead.name }}</a></td>
+                <td>{{ lead.phone }}</td>
+                <td>{{ lead.created_by }}</td>
+                <td>{{ lead.created_at|date:"Y-m-d" }}</td>
+                <td>{{ lead.teamleader }}</td>
+                <td>{{ lead.leadsource }}</td>
+                <td>{{ lead.subsource }}</td>
+                <td>{{ lead.budget|default:"Not specified" }}</td>
+                <td class="{% if lead.get_lead_status_display == 'Prospect' %}bg-primary text-white{% endif %}">
+                    {{ lead.get_lead_status_display }}
+                </td>
+                <td>{{ lead.primaryemail }}</td>
+                <td>{{ lead.next_followup_date }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% else %}
-    <div class="alert alert-light border text-center" role="alert">
-        No leads found.
-    </div>
+<div class="alert alert-light border text-center" role="alert">
+    No leads found.
+</div>
 {% endif %}
+
+<!-- JavaScript for filtering and count update -->
+<script>
+function filterColumn(colIndex, query) {
+    const table = document.querySelector("#leadTable");
+    const rows = table.querySelectorAll("tbody tr");
+    const filter = query.toLowerCase();
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const cell = row.cells[colIndex - 1];
+        if (cell) {
+            const text = cell.textContent.toLowerCase();
+            const match = text.includes(filter);
+            row.style.display = match ? "" : "none";
+            if (match) visibleCount++;
+        }
+    });
+
+    document.getElementById("filteredCount").textContent = visibleCount;
+}
+</script>
 {% endblock %}

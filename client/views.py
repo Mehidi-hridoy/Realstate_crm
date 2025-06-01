@@ -10,8 +10,6 @@ def client_list(request):
     return render(request,'client/clients_list.html', {
         'clients': clients
     })
-
- 
 @login_required
 def clients_detail(request, pk):  
     client= get_object_or_404(Client, created_by=request.user, pk=pk)
@@ -19,12 +17,6 @@ def clients_detail(request, pk):
         'client': client
     })
 
-
-
-
-
-
-                   
 @login_required
 def add_client(request):
     if request.method == 'POST':

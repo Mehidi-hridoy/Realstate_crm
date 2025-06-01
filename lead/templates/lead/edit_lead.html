@@ -3,12 +3,24 @@
 {% block title %}Edit Lead{% endblock %}
 
 {% block content %}
-<h1>Edit Leads Details</h1>
-
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Save</button>
-</form>
-
+<div class="container my-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
+      <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header bg-primary text-white rounded-top-4">
+          <h4 class="mb-0">Edit Lead Details</h4>
+        </div>
+        <div class="card-body">
+          <form method="post" novalidate>
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="text-end mt-3">
+              <button type="submit" class="btn btn-primary px-4">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

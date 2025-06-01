@@ -1,0 +1,84 @@
+{% extends "crm/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+  <h3 class="mb-4">Today's Follow-Ups & Edited Leads</h3>
+
+  <!-- Total count -->
+  <div class="card shadow-sm rounded p-1 mb-2 bg-light">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+  <h5 class="mb-0 text-primary">Total Updated Leads: {{ leads_data|length }}</h5>
+  <h5 class="mb-0 text-success">Total Created Today: {{ today_created_count }}</h5>
+</div>
+
+
+    
+  </div>
+
+  {% if leads_data %}
+    <div class="row g-4">
+      {% for item in leads_data %}
+        <div class="col-md-6">
+          <div class="card shadow-sm rounded h-100 p-3 border-start border-4 
+                      {% if item.is_followed %}border-success{% elif item.is_edited %}border-primary{% else %}border-secondary{% endif %}">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <h5 class="text-dark mb-1">{{ item.lead.name }}</h5>
+                <small class="text-muted">
+                  Email: {{ item.lead.email|default:"N/A" }}<br>
+                  Phone: {{ item.lead.phone|default:"N/A" }}
+                </small>
+              </div>
+              <div class="text-end">
+  {% if item.is_followed %}
+    <span class="badge bg-success mb-1">Followed Up</span><br>
+  {% endif %}
+  {% if item.lead.created_at.date == today %}
+    <span class="badge bg-primary">Created Today</span>
+  {% endif %}
+</div>
+
+            </div>
+
+            <div class="mt-2">
+              <p class="mb-1"><strong>Status:</strong> {{ item.lead.lead_status|default:"N/A" }}</p>
+
+              <p class="mb-1"><strong>Next Follow-up:</strong>
+                {% if item.lead.next_followup_date %}
+                  {{ item.lead.next_followup_date|date:"M d, Y" }}
+                {% else %}
+                  N/A
+                {% endif %}
+              </p>
+
+              <p class="mb-1"><strong>Assigned To:</strong>
+                {% if item.lead.assigned_to %}
+                  {{ item.lead.assigned_to.get_full_name|default:item.lead.assigned_to.username }}
+                {% else %}
+                  Not Assigned
+                {% endif %}
+              </p>
+
+              {% if item.lead.description %}
+                <p class="mb-1"><strong>Description:</strong> {{ item.lead.description }}</p>
+              {% endif %}
+
+                <p class="text-muted small mt-2">
+  <strong>Created By:</strong> 
+  {% if item.lead.created_by %}
+    {{ item.lead.created_by.username }}
+  {% else %}
+    Unknown
+  {% endif %}
+</p>
+
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-info">No follow-ups or edits for today.</div>
+  {% endif %}
+</div>
+{% endblock %}

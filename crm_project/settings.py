@@ -16,11 +16,15 @@ SECRET_KEY = 'django-insecure-_5h2r*m2u%-qed9s4^fpgv2=ynm!jb^go6bwfnv2mqi^jwb)qc
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+LOGIN_REDIRECT_URL = '/dashboard/'  # where users go after login
+LOGOUT_REDIRECT_URL = 'index'           # after logout
+LOGIN_URL = 'login'                 # login URL name
 
+
+"""
 LOGIN_REDIRECT_URL='/dashboard/'
 LOGIN_URL='login'
-LOGOUT_REDIRECT_URL='index'
+LOGOUT_REDIRECT_URL='index'"""
 
 CSRF_TRUSTED_ORIGINS = ['https://realstate-crm-7.onrender.com']
 

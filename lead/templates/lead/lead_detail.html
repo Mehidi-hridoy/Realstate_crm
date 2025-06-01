@@ -1,0 +1,106 @@
+
+{% extends 'crm/base.html' %}
+
+{% block title %}Lead Details{% endblock %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lead Details - {{ lead.name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Lead Details: {{ lead.name }}</h1>
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Lead Information</h5>
+                <p><strong>Phone:</strong> {{ lead.phone|default:"Not provided" }}</p>
+                <p><strong>Primary Email:</strong> {{ lead.primaryemail|default:"Not provided" }}</p>
+                <p><strong>Secondary Email:</strong> {{ lead.secondaryemail|default:"Not provided" }}</p>
+                <p><strong>Profession:</strong> {{ lead.get_profession_display|default:"Not provided" }}</p>
+                <p><strong>Present Address:</strong> {{ lead.get_present_address_display|default:"Not provided" }}</p>
+                <p><strong>Resident:</strong> {{ lead.resident|default:"Not provided" }}</p>
+                <p><strong>Project Type:</strong> {{ lead.get_projecttype_display|default:"Not provided" }}</p>
+                <p><strong>Project Status:</strong> {{ lead.get_projectstatus_display|default:"Not provided" }}</p>
+                <p><strong>Preferred Location:</strong> {{ lead.get_preferred_location_display|default:"Not provided" }}</p>
+                <p><strong>Company:</strong> {{ lead.get_company_display|default:"Not provided" }}</p>
+                <p><strong>Interested Project Building:</strong> {{ lead.get_interested_project_building_display|default:"Not provided" }}</p>
+                <p><strong>Unit Size:</strong> {{ lead.get_unit_size_display|default:"Not provided" }}</p>
+                <p><strong>Preference Floor:</strong> {{ lead.get_preference_floor_display|default:"Not provided" }}</p>
+                <p><strong>Facing:</strong> {{ lead.get_facing_display|default:"Not provided" }}</p>
+                <p><strong>View:</strong> {{ lead.get_view_display|default:"Not provided" }}</p>
+                <p><strong>Budget:</strong> {{ lead.get_budget_display|default:"Not provided" }}</p>
+                <p><strong>Lead Source:</strong> {{ lead.get_leadsource_display|default:"Not provided" }}</p>
+                <p><strong>Sub Source:</strong> {{ lead.get_subsource_display|default:"Not provided" }}</p>
+                <p><strong>Team Leader:</strong> {{ lead.get_teamleader_display|default:"Not provided" }}</p>
+                <p><strong>Description:</strong> {{ lead.description|default:"Not provided" }}</p>
+                <p><strong>Lead Status:</strong> {{ lead.get_lead_status_display|default:"Not provided" }}</p>
+                <p><strong>Follow-Up By:</strong> {{ lead.get_followup_by_display|default:"Not provided" }}</p>
+                <p><strong>Next Follow-Up By:</strong> {{ lead.get_next_followup_by_display|default:"Not provided" }}</p>
+                <p><strong>Next Follow-Up Date:</strong> {{ lead.next_followup_date|default:"Not provided" }}</p>
+                <p><strong>Created By:</strong> {{ lead.created_by.username }}</p>
+                <p><strong>Created At:</strong> {{ lead.created_at }}</p>
+                <p><strong>Modified At:</strong> {{ lead.modified_at }}</p>
+            </div>
+        </div>
+
+        <h2>Update Follow-Up Information</h2>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="id_followup_by" class="form-label">Follow-Up By</label>
+                {{ form.followup_by }}
+            </div>
+            <div class="mb-3">
+                <label for="id_next_followup_by" class="form-label">Next Follow-Up By</label>
+                {{ form.next_followup_by }}
+            </div>
+            <div class="mb-3">
+                <label for="id_next_followup_date" class="form-label">Next Follow-Up Date</label>
+                {{ form.next_followup_date }}
+            </div>
+            <div class="mb-3">
+                <label for="id_lead_status" class="form-label">Lead Status</label>
+                {{ form.lead_status }}
+            </div>
+            <button type="submit" class="btn btn-primary">Update</button>
+        </form>
+
+        <h2 class="mt-5">Follow-Up Summary</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Next Follow-Up Date</th>
+                    <th>Number of Leads</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for summary in followup_summary %}
+                    <tr>
+                        <td>{{ summary.next_followup_date }}</td>
+                        <td>{{ summary.lead_count }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="2">No follow-up dates scheduled.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+{% endblock %}

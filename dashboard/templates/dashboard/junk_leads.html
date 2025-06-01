@@ -1,0 +1,54 @@
+{% extends 'crm/base.html' %}
+
+{% block title %}Junk List {% endblock %}
+
+{% block content %}
+<style>
+    .bg-deep-blue {
+        background-color: #003366 !important;
+        color: white !important;
+    }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h4 fw-semibold mb-0">Junk List</h1>
+    <a class="btn btn-outline-primary btn-sm" href="{% url 'addlead' %}">+ Add Lead</a>
+</div>
+
+{% if leads %}
+    <div class="table-responsive shadow-sm rounded border">
+        <table class="table table-hover table-striped mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Stage</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Created By</th>
+                    <th scope="col">Follow-Up</th>
+                    <th scope="col" > Next Follow-Up Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lead in leads %}
+                    <tr>
+                        <th scope="row">{{ forloop.counter }}</th>
+                        <td><a href="{% url 'lead_details' lead.id %}">{{ lead.name }}</a></td>
+                        
+                        <td>{{ lead.get_lead_status_display }}</td>
+                        <td>{{ lead.primaryemail }}</td>
+                        <td>{{ lead.created_by }}</td>
+                        <td> <a href="{% url 'edit_leads' lead.id %}" class="btn btn-sm btn-outline-secondary">Add</a></td>
+                        <td>{{ lead.next_followup_date }}</td>
+                        
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="alert alert-light border text-center" role="alert">
+        No leads found.
+    </div>
+{% endif %}
+{% endblock %}
