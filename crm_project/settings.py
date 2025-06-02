@@ -14,11 +14,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-_5h2r*m2u%-qed9s4^fpgv2=ynm!jb^go6bwfnv2mqi^jwb)qc'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 LOGIN_REDIRECT_URL = '/dashboard/'  # where users go after login
 LOGOUT_REDIRECT_URL = 'index'           # after logout
 LOGIN_URL = 'login'                 # login URL name
+
+TIME_ZONE = 'Asia/Dhaka'  # or your local timezone
+USE_TZ = True
+
+
 
 
 """

@@ -1,0 +1,39 @@
+{% extends "crm/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="text-primary mb-4">Lead Details</h2>
+
+  <!-- Lead Info Card -->
+  <div class="card mb-4 shadow-sm">
+    <div class="card-body">
+      <h4 class="card-title">{{ lead.name }}</h4>
+      <p><strong>Status:</strong> {{ lead.lead_status }}</p>
+      <p><strong>Description:</strong> {{ lead.description|default:"—" }}</p>
+      <p><strong>Next Follow-Up Date:</strong> {{ lead.next_followup_date|date:"F j, Y" }}</p>
+      <p><strong>Created At:</strong> {{ lead.created_at|date:"F j, Y, g:i A" }}</p>
+      <p><strong>Last Modified:</strong> {{ lead.modified_at|date:"F j, Y, g:i A" }}</p>
+
+      <a href="{% url 'lead:update_followup' pk=lead.unique_id %}" class="btn btn-warning mt-3">
+        ✏️ Update Follow-Up
+      </a>
+    </div>
+  </div>
+
+  <!-- Lead Change Logs -->
+  {% if lead.leadchangelog_set.exists %}
+    <h5 class="text-secondary mb-3">Change History</h5>
+    <ul class="list-group">
+      {% for log in lead.leadchangelog_set.all|dictsortreversed:"timestamp" %}
+        <li class="list-group-item">
+          <small class="text-muted">{{ log.timestamp|date:"M d, Y H:i" }} by {{ log.changed_by }}</small><br>
+          <strong>{{ log.field_name|capfirst }}</strong> changed from
+          <em>"{{ log.old_value }}"</em> to <em>"{{ log.new_value }}"</em>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-muted">No changes have been logged yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

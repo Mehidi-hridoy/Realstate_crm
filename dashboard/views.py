@@ -1,12 +1,14 @@
-from django.shortcuts import render
+
 from django.contrib.auth.decorators import login_required
 from lead.models import Lead
+from django.shortcuts import render, redirect, get_object_or_404
+from django.utils.timezone import now # adjust import if needed
+from datetime import datetime
 from client.models import Client
 from teams.models import Team
 from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect
 from dashboard.models import FollowUp
-from django.utils.timezone import now
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.db.models import Q, F
@@ -78,6 +80,10 @@ def add_followup(request, lead_id):
     )
     return redirect('dashboard')  # or redirect to a lead detail page
 
+
+
+
+
 @login_required
 def followup_today(request):
     today = now().date()
@@ -116,24 +122,26 @@ def followup_today(request):
     return render(request, 'dashboard/followup_today.html', context)
 
 
+
+
+
+
+
+
 @login_required
 def followup_next(request):
     today = timezone.now().date()
-
     next_followups = FollowUp.objects.filter(
-        user=request.user,
-        followup_date__gt=today
-    ).filter(
-        Q(lead__modified_at__gt=F('modified_at')) | Q(followup_date__gt=today)
+    user=request.user,
+    followup_date__gt=today
     ).order_by('followup_date').select_related('lead')
+
 
     context = {
         'next_followups': next_followups,
         'page_title': "Next Follow-ups",
     }
     return render(request, 'dashboard/followup_next.html', context)
-
-
 
 
 @login_required

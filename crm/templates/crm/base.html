@@ -59,7 +59,7 @@
               <a class="btn btn-outline-primary fw-bold btn-sm" href="{% url 'dashboard' %}">Dashboard</a>
             </li>
             <li class="nav-item">
-              <a class="btn btn-outline-primary fw-bold btn-sm" href="{% url 'addlead' %}">Add Lead</a>
+              <a class="btn btn-outline-primary fw-bold btn-sm" href="{% url 'lead:addlead' %}">Add Lead</a>
             </li>
             {% if request.user.username == "CRM" or request.user.username == "Nadira" %}
               <li class="nav-item">
@@ -67,7 +67,7 @@
               </li>
             {% endif %}
             <li class="nav-item">
-              <a class="btn btn-outline-primary fw-bold btn-sm" href="{% url 'leads_list' %}">All Leads</a>
+              <a class="btn btn-outline-primary fw-bold btn-sm" href="{% url 'lead:leads_list' %}">All Leads</a>
             </li>
             <li class="nav-item">
               <a class="btn btn-outline-primary fw-bold btn-sm" href="{% url 'client_list' %}">Clients List</a>

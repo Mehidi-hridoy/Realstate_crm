@@ -30,21 +30,8 @@
 </div>
 
 
-
-
-
 <!-- Cards Section -->
 <div class="row my-4 g-3 justify-content-center">
-
-  <div class="col-12 col-md-5">
-    <a href="{% url 'followup_next' %}" class="text-decoration-none">
-      <div class="card shadow-sm rounded p-4 text-center h-100" style="cursor: pointer; transition: transform 0.2s;">
-        <div class="display-1 fw-bold text-primary mb-2">{{ followup_done_count|default:"0" }}</div>
-        <h4 class="mb-3 text-primary">Follow Up Done</h4>
-        <p class="mb-0 text-muted">View all upcoming follow-ups with updated dates.</p>
-      </div>
-    </a>
-  </div>
 
   <div class="col-12 col-md-5">
     <a href="{% url 'followup_today' %}" class="text-decoration-none">
@@ -74,7 +61,7 @@
       <div class="col-12">
         <div class="d-flex flex-row overflow-auto gap-3 px-0 mt-4 w-100">
           {% comment %} Cards with hover effect {% endcomment %}
-          <a href="{% url 'leads_list' %}" class="text-decoration-none flex-fill">
+          <a href="{% url 'lead:leads_list' %}" class="text-decoration-none flex-fill">
             <div class="card text-center border-danger shadow-sm h-100 w-100 card-hover" style="min-width: 0; transition: transform 0.2s; background: #dc3545;">
               <div class="card-body p-3">
                 <h6 class="text-white fw-bold mb-1">Total Active Leads</h6>
@@ -190,7 +177,7 @@
             <td>{{ item.budget|default:"Not specified" }}</td>
             
             <td>
-            <a href="{% url 'lead_details' item.pk %}" class="btn btn-sm btn-info">Read More</a>
+            <a href="{% url 'lead:lead_details' item.pk %}" class="btn btn-sm btn-info">Read More</a>
             </td>
           </tr>
           {% endfor %}

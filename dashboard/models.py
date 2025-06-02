@@ -13,3 +13,5 @@ class FollowUp(models.Model):
 
     def __str__(self):
         return f"Follow-up for {self.lead} by {self.user} on {self.followup_date}"
+
+

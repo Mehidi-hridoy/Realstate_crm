@@ -17,6 +17,7 @@ class Lead(models.Model):
 
     PROFESSION_CHOICES = (
         ('doctor', 'Doctor'),
+        ('artist', 'Artist'),
         ('engineer', 'Engineer'),
         ('teacher', 'Teacher'),
         ('student', 'Student'),
@@ -153,15 +154,18 @@ class Lead(models.Model):
 
     name = models.CharField("Name", max_length=50)
     team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True)
-    phone = models.CharField("Phone", max_length=11, unique=True, validators=[
-        RegexValidator(
-            regex=r'^\d{11}$',
-            message='Phone number must be 11 digits.',
-            code='invalid_phone' 
-        )
-    ],
+    phone = models.CharField(
+    "Phone",
+        max_length=11,
+        unique=True,
+        validators=[
+            RegexValidator(
+                regex=r'^\d{11}$',
+                message='Phone number must contain only numbers.',
+                code='invalid_phone'
+            )
+        ]
     )
-
     present_address = models.CharField("Present Address", max_length=20, choices=PREFERRED_LOCATION_CHOICES, blank=True, null=True)
     primaryemail = models.EmailField("Primary Email", blank=True, null=True)
     secondaryemail = models.EmailField("Secondary Email", blank=True, null=True)
@@ -187,32 +191,35 @@ class Lead(models.Model):
     created_at = models.DateTimeField("Created At", auto_now_add=True)
     modified_at = models.DateTimeField("Modified At", auto_now=True)
     followup_by = models.CharField("Follow Up By", max_length=50, choices=FOLLOWUP_STATUS_CHOICES, blank=True, null=True)
-    lead_status = models.CharField("Lead Stage", max_length=20, choices=LEAD_STAGE_CHOICES, default="lead", null=True)
+    lead_status = models.CharField("Lead Status", max_length=20, choices=LEAD_STAGE_CHOICES, default="lead", null=True)
     next_followup_by = models.CharField(max_length=20, choices=FOLLOWUP_STATUS_CHOICES, blank=True, null=True)
     next_followup_date = models.DateField("Next Follow Up Date", blank=True, null=True)
     modified_at = models.DateTimeField(auto_now=True)
-
-
+    
 
     unique_id = models.CharField(max_length=255, unique=True, blank=True, null=True)
-
+    
     def save(self, *args, **kwargs):
-        # First save to get a pk if this is a new object
-        if not self.pk:
-            super().save(*args, **kwargs)
+        is_new = self.pk is None
+        super().save(*args, **kwargs)  # Save to get pk
 
-        # If unique_id is empty, generate it using pk
-        if not self.unique_id:
-            self.unique_id = f"P-{self.pk:04d}"  # zero-padded 6-digit id
-            # Save again to update unique_id
-            kwargs['force_insert'] = False  # prevent duplicate insert attempt
-            super().save(*args, **kwargs)
-        else:
-            super().save(*args, **kwargs)
+        if is_new and not self.unique_id:
+            self.unique_id = f"P-{self.pk:04d}"
+            # Update unique_id without causing recursion
+            Lead.objects.filter(pk=self.pk).update(unique_id=self.unique_id)
 
-    class Meta:
-        ordering = ('name',)
+
+
+class LeadChangeLog(models.Model):
+    lead = models.ForeignKey(Lead, on_delete=models.CASCADE, related_name='change_logs')
+    changed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    change_date = models.DateTimeField(auto_now_add=True)
+    field_name = models.CharField(max_length=100)
+    old_value = models.TextField(blank=True, null=True)
+    new_value = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return self.name
+        return f"{self.lead} changed {self.field_name} on {self.change_date.strftime('%Y-%m-%d %H:%M:%S')}"
+    
+
 

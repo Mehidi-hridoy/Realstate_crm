@@ -1,0 +1,68 @@
+
+{% extends "crm/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Update Follow-up for {{ lead.name }}</h2>
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        <!-- Lead Status Dropdown -->
+        <div class="form-group">
+            <label for="lead_status">Lead Status</label>
+            <select name="lead_status" id="lead_status" class="form-control">
+                {% for key, label in lead_status_choices %}
+                    <option value="{{ key }}" {% if lead.lead_status == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Description Textarea -->
+        <div class="form-group mt-3">
+            <label for="description">Description / Follow-up Note</label>
+            <textarea name="description" id="description" class="form-control" rows="4">{{ description }}</textarea>
+        </div>
+
+        <!-- Next Follow-up Date -->
+        <div class="form-group mt-3">
+            <label for="next_followup_date">Next Follow-up Date</label>
+            <input type="date" name="next_followup_date" id="next_followup_date" class="form-control"
+                   value="{{ lead.next_followup_date|date:'Y-m-d' }}">
+        </div>
+
+        <!-- Project Type Dropdown -->
+        <div class="form-group mt-3">
+            <label for="project_type">Project Type</label>
+            <select name="project_type" id="project_type" class="form-control">
+                {% for key, label in project_type_choices %}
+                    <option value="{{ key }}" {% if project_status == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Follow-up Method Dropdown -->
+        <div class="form-group mt-3">
+            <label for="followup_method">Follow-up Method</label>
+            <select name="followup_method" id="followup_method" class="form-control">
+                {% for key, label in followup_methods %}
+                    <option value="{{ key }}" {% if followup_method == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Submit and Cancel Buttons -->
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary">Update Follow-up</button>
+            <a href="{% url 'lead:leads_list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+
+    <!-- Optional: Last Comment -->
+    {% if last_comment %}
+    <div class="mt-4">
+        <h5>Last Comment</h5>
+        <p>{{ last_comment }}</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

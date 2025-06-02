@@ -17,15 +17,23 @@
 </style>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h4 fw-semibold mb-0">
-        Lead List {% if total_leads is not None %}({{ total_leads }}){% endif %}
-    </h1>
+    <h1 class="h4 fw-semibold mb-0">Lead List {% if total_leads %}({{ total_leads }}){% endif %}</h1>
     <a class="btn btn-outline-primary btn-sm" href="{% url 'lead:addlead' %}">+ Add Lead</a>
 </div>
 
+<div>
+  {% for lead in leads %}
+    {% if lead.change_logs.count > 0 %}
+      <p>
+        {{ lead.name }} — <a href="{% url 'lead:lead_change_history' lead.id %}">📜 View Change History</a>
+      </p>
+    {% endif %}
+  {% empty %}
+    <p>No leads found.</p>
+  {% endfor %}
+</div>
 
 
-<!-- Filtered Count Card -->
 <div class="card mb-3">
     <div class="card-body p-2">
         <strong>Filtered Leads:</strong> <span id="filteredCount">{{ leads|length }}</span>
@@ -36,29 +44,17 @@
 <div class="table-responsive shadow-sm rounded border">
     <table class="table table-hover table-striped mb-0" id="leadTable">
         <thead class="table-dark">
-            <tr>
-                <th>ID<br><input type="text" class="filter-input" onkeyup="filterColumn(1, this.value)" placeholder="Filter ID"></th>
-                <th>Name<br><input type="text" class="filter-input" onkeyup="filterColumn(2, this.value)" placeholder="Filter Name"></th>
-                <th>Number<br><input type="text" class="filter-input" onkeyup="filterColumn(3, this.value)" placeholder="Filter Number"></th>
-                <th>Created By<br><input type="text" class="filter-input" onkeyup="filterColumn(4, this.value)" placeholder="Filter Creator"></th>
-                <th>Created Date<br><input type="text" class="filter-input" onkeyup="filterColumn(5, this.value)" placeholder="Filter Date"></th>
-                <th>Team Leader<br><input type="text" class="filter-input" onkeyup="filterColumn(6, this.value)" placeholder="Filter Team Leader"></th>
-                <th>Lead Source<br><input type="text" class="filter-input" onkeyup="filterColumn(7, this.value)" placeholder="Filter Source"></th>
-                <th>Sub Source<br><input type="text" class="filter-input" onkeyup="filterColumn(8, this.value)" placeholder="Filter Sub Source"></th>
-                <th>Budget<br><input type="text" class="filter-input" onkeyup="filterColumn(9, this.value)" placeholder="Filter Budget"></th>
-                <th>Stage<br><input type="text" class="filter-input" onkeyup="filterColumn(10, this.value)" placeholder="Filter Stage"></th>
-                <th>Email<br><input type="text" class="filter-input" onkeyup="filterColumn(11, this.value)" placeholder="Filter Email"></th>
-                
-                <th>Next Follow-Up<br><input type="text" class="filter-input" onkeyup="filterColumn(13, this.value)" placeholder="Filter Date"></th>
-            </tr>
+           
         </thead>
         <tbody>
             {% for lead in leads %}
             <tr>
-                <td><a href="{% url 'lead:update_followup' lead.id %}">{{ lead.unique_id }}</a></td>
-                <td><a href="{% url 'lead:lead_change_history' lead.id %}">{{ lead.name }}</a></td>
+                <td>{{ lead.unique_id }}</td>
+                <td><a href="{% url 'lead:update_followup' lead.id %}">{{ lead.name }}</a></td>
                 
-                <td>{{ lead.phone }}</td>
+
+
+                <td><a href="{% url 'lead:lead_change_history' lead.id %}">{{ lead.phone }}</a></td>
                 <td>{{ lead.created_by }}</td>
                 <td>{{ lead.created_at|date:"Y-m-d" }}</td>
                 <td>{{ lead.teamleader }}</td>
@@ -81,7 +77,6 @@
 </div>
 {% endif %}
 
-<!-- JavaScript for filtering and count update -->
 <script>
 function filterColumn(colIndex, query) {
     const table = document.querySelector("#leadTable");
@@ -90,7 +85,7 @@ function filterColumn(colIndex, query) {
     let visibleCount = 0;
 
     rows.forEach(row => {
-        const cell = row.cells[colIndex - 1];
+        const cell = row.cells[colIndex];
         if (cell) {
             const text = cell.textContent.toLowerCase();
             const match = text.includes(filter);
