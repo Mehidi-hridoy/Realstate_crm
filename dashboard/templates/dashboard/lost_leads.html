@@ -12,7 +12,7 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="h4 fw-semibold mb-0">Lost List</h1>
-    <a class="btn btn-outline-primary btn-sm" href="{% url 'addlead' %}">+ Add Lead</a>
+    <a class="btn btn-outline-primary btn-sm" href="{% url 'lead:addlead' %}">+ Add Lead</a>
 </div>
 
 {% if leads %}
@@ -33,12 +33,12 @@
                 {% for lead in leads %}
                     <tr>
                         <th scope="row">{{ forloop.counter }}</th>
-                        <td><a href="{% url 'lead_details' lead.id %}">{{ lead.name }}</a></td>
+                        <td><a href="{% url 'lead:lead_change_history' lead.id %}">{{ lead.name }}</a></td>
                         
                         <td>{{ lead.get_lead_status_display }}</td>
                         <td>{{ lead.primaryemail }}</td>
                         <td>{{ lead.created_by }}</td>
-                        <td> <a href="{% url 'edit_leads' lead.id %}" class="btn btn-sm btn-outline-secondary">Add</a></td>
+                        <td> <a href="{% url 'edit_leads' lead.id %}?redirect_to=lost_leads" class="btn btn-sm btn-outline-secondary">Edit</a></td>
                         <td>{{ lead.next_followup_date }}</td>
                         
                     </tr>

@@ -5,7 +5,7 @@ from crm.views import  about, index
 from userprofile.views import signup, myaccount, custom_logout
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('lead/', include('lead.urls', namespace='lead')),  # Fixed 'urls'
+    path('', include('lead.urls',)),  # Fixed 'urls'
     path('', include('dashboard.urls')),
     path('client_list/', include('client.urls')),
     path('myaccount/', myaccount, name='myaccount'),

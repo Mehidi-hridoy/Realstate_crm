@@ -1,0 +1,145 @@
+{% extends "crm/base.html" %}
+{% load static %}
+
+{% block title %}Lead Details & Update for {{ lead.name }}{% endblock %}
+
+{% block content %}
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Change History for {{ lead.name }}</h2>
+
+    {% if grouped_data %}
+    <div class="mb-4">
+        <table class="table table-sm table-bordered table-striped" style="font-size: 0.75rem;">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    {% if request.user.is_superuser %}
+                        <th>Fields</th>
+                    {% endif %}
+                    <th>Previous Stage</th>
+                    <th>New Stage</th>
+                    <th>Next Follow-up</th>
+                    <th>Updated By</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for group in grouped_data %}
+                <tr>
+                    <td>{{ group.datetime }}</td>
+                    <td>{{ group.logs.0.new_value }}</td>
+                    {% if request.user.is_superuser %}
+                        <td>
+                            {% for log in group.logs %}
+                                {% if log.field_name != "description" %}
+                                    {{ log.field_name|title }}{% if not forloop.last %}, {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                    {% endif %}
+                    <td>{{ group.lead_status_old|default:"-" }}</td>
+                    <td>{{ group.lead_status_new }}</td>
+                    <td>{{ group.next_followup_date|default:"-" }}</td>
+                    <td>{{ group.logs.0.changed_by.get_full_name|default:group.logs.0.changed_by.username }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p>No change history available.</p>
+    {% endif %}
+
+    <hr class="my-4">
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="lead_status">Lead Status</label>
+            <select name="lead_status" id="lead_status" class="form-control form-control-sm">
+                {% for key, label in lead_status_choices %}
+                    <option value="{{ key }}" {% if lead.lead_status == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group mt-3">
+            <label for="description">Follow-up Note</label>
+            <textarea name="description" id="description" class="form-control form-control-sm" rows="2"></textarea>
+        </div>
+
+        <div class="form-group mt-3">
+            <label for="next_followup_date">Next Follow-up Date <span class="text-danger">*</span></label>
+            <input type="date" name="next_followup_date" id="next_followup_date" class="form-control form-control-sm" required>
+        </div>
+
+        <div class="form-group mt-3">
+            <label for="project_type">Project Type</label>
+            <select name="project_type" id="project_type" class="form-control form-control-sm">
+                {% for key, label in project_type_choices %}
+                    <option value="{{ key }}" {% if project_status == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group mt-3">
+            <label for="followup_method">Follow-up Method</label>
+            <select name="followup_method" id="followup_method" class="form-control form-control-sm">
+                {% for key, label in followup_methods %}
+                    <option value="{{ key }}" {% if followup_method == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary btn-sm">Update</button>
+            <a href="{% url 'lead:leads_list' %}" class="btn btn-secondary btn-sm">Cancel</a>
+        </div>
+    </form>
+
+    <script>
+        document.querySelector("form").addEventListener("submit", function(event) {
+            let nextFollowUpDate = document.getElementById("next_followup_date").value;
+            if (!nextFollowUpDate) {
+                alert("Next Follow-up Date is required.");
+                event.preventDefault();
+            }
+        });
+    </script>
+
+    {% if last_comment %}
+    <div class="mt-4">
+        <h5>Last Comment</h5>
+        <p>{{ last_comment }}</p>
+    </div>
+    {% endif %}
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector("form");  // Adjust selector if needed
+    const followupDateInput = document.querySelector("input[name='next_followup_date']");
+
+    if (form && followupDateInput) {
+        form.addEventListener("submit", function (e) {
+            const inputDate = new Date(followupDateInput.value);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Clear time for accurate comparison
+
+            if (inputDate <= today) {
+                e.preventDefault();  // Prevent form from submitting
+                alert("Next Follow-up Date must be later than today.");
+            }
+        });
+    }
+});
+</script>
+
+{% endblock %}

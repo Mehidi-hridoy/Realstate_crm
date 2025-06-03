@@ -15,5 +15,7 @@ urlpatterns=[
     path('lead/<int:lead_id>/add_followup/', views.add_followup, name='add_followup'),
     path('followups/today/', views.followup_today, name='followup_today'),
     path('followup/next/', views.followup_next, name='followup_next'),
+    path("<int:pk>/edit/", views.edit_leads, name='edit_leads'),
+    
 ]
 

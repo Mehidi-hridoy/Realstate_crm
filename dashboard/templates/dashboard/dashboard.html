@@ -1,127 +1,107 @@
 {% extends 'crm/base.html' %}
+
 {% load static %}
 
-{% block title %}
-  Dashboard
-{% endblock %}
+{% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="container-fluid p-0 m-0 min-vh-90" style="overflow-x: hidden; background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);">
+<div class="dashboard-container container-fluid p-0 m-0 min-vh-100" style="overflow-x: hidden;">
 
- <!-- Hero Section with Vector Graphic -->
-<div class="row align-items-center justify-content-center py-3 m-0" style="background: #1b84ca; min-height: 120px;">
-  <div class="col-12 col-md-6 text-white text-center py-2">
-    <h1 class="fw-bold mb-2" style="font-size: 1.7rem;">
-      Welcome {{ user.first_name }} {{ user.last_name }} ({{ user.username }}) to Your Dashboard
-    </h1>
-    <p class="lead mb-2" style="font-size: 1.1rem;">
-      Track your leads and clients visually and efficiently.
-    </p>
+  <!-- Hero Section -->
+  <div class="hero-section row align-items-center justify-content-center py-3 m-0">
+    <div class="col-12 col-md-6 text-white text-center py-2">
+      <h1 class="hero-title fw-bold mb-2">
+        Welcome {{ user.first_name }} {{ user.last_name }} ({{ user.username }}) to Your Dashboard
+      </h1>
+      <p class="hero-subtitle lead mb-2">
+        Track your leads and clients visually and efficiently.
+      </p>
+    </div>
+    <div class="col-12 col-md-6 text-center py-2">
+      <svg width="90" height="50" viewBox="0 0 220 120" fill="none" xmlns="http://www.w3.org/2000/svg" class="dashboard-logo">
+        <ellipse cx="110" cy="60" rx="100" ry="50" fill="#a5b4fc"/>
+        <ellipse cx="110" cy="60" rx="70" ry="35" fill="#818cf8"/>
+        <circle cx="110" cy="60" r="25" fill="#6366f1"/>
+        <text x="110" y="65" text-anchor="middle" fill="#fff" font-size="18" font-family="Arial" font-weight="bold">CRM</text>
+      </svg>
+    </div>
   </div>
-  <div class="col-12 col-md-6 text-center py-2">
-    <!-- Smaller SVG Vector Graphic -->
-    <svg width="90" height="50" viewBox="0 0 220 120" fill="none" xmlns="http://www.w3.org/2000/svg" style="max-width: 90px; max-height: 50px;">
-      <ellipse cx="110" cy="60" rx="100" ry="50" fill="#a5b4fc"/>
-      <ellipse cx="110" cy="60" rx="70" ry="35" fill="#818cf8"/>
-      <circle cx="110" cy="60" r="25" fill="#6366f1"/>
-      <text x="110" y="65" text-anchor="middle" fill="#fff" font-size="18" font-family="Arial" font-weight="bold">CRM</text>
-    </svg>
-  </div>
-</div>
 
-
-<!-- Cards Section -->
-<div class="row my-4 g-3 justify-content-center">
-
-  <div class="col-12 col-md-5">
-    <a href="{% url 'followup_today' %}" class="text-decoration-none">
-      <div class="card shadow-sm rounded p-4 text-center h-100" style="cursor: pointer; transition: transform 0.2s;">
+  <!-- Stats Cards Section -->
+  <div class="stats-section container my-4">
     
-      <div class="display-1 fw-bold text-primary mb-2">{{ followup_today_count }}</div>
-        <h4 class="mb-3 text-primary">Follow Up Today</h4>
-        <p class="mb-0 text-muted">Check today's scheduled follow-ups and edited leads.</p>
-      </div>
-    </a>
-  </div>
 
-</div>
-
-<style>
-  .card:hover {
-    transform: scale(1.05);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-  }
-</style>
-
-
-  <!-- Main dashboard content -->
-  <div class="p-0 m-0">
-
-    <div class="row mb-4 g-0">
+    <!-- Lead Status Cards -->
+    <div class="row mt-4 g-2">
       <div class="col-12">
-        <div class="d-flex flex-row overflow-auto gap-3 px-0 mt-4 w-100">
-          {% comment %} Cards with hover effect {% endcomment %}
-          <a href="{% url 'lead:leads_list' %}" class="text-decoration-none flex-fill">
-            <div class="card text-center border-danger shadow-sm h-100 w-100 card-hover" style="min-width: 0; transition: transform 0.2s; background: #dc3545;">
-              <div class="card-body p-3">
-                <h6 class="text-white fw-bold mb-1">Total Active Leads</h6>
-                <h5 class="fw-bolder text-white" style="font-size: 2.2rem;">{{total_leads}}</h5>
+        <div class="d-flex flex-row flex-wrap justify-content-center gap-2">
+          <a href="{% url 'lead:leads_list' %}" class="text-decoration-none flex-grow-1" style="min-width: 120px;">
+            <div class="stat-card card text-center border-danger shadow-sm h-100">
+              <div class="card-body p-3 bg-danger text-white">
+                <h6 class="fw-bold mb-1">Total Active Leads</h6>
+                <h5 class="fw-bolder" style="font-size: 2.2rem;">{{total_leads}}</h5>
               </div>
             </div>
           </a>
           
-          <a href="{% url 'high_priority_leads' %}" class="text-decoration-none flex-fill">
-            <div class="card text-center border-danger shadow-sm h-100 w-100 card-hover" style="min-width: 0; transition: transform 0.2s;">
+          <a href="{% url 'high_priority_leads' %}" class="text-decoration-none flex-grow-1" style="min-width: 120px;">
+            <div class="stat-card card text-center border-danger shadow-sm h-100">
               <div class="card-body p-3">
                 <h6 class="text-danger fw-bold mb-1">High Priority</h6>
                 <h5 class="fw-bold">{{high_prospect_count}}</h5>
               </div>
             </div>
           </a>
-          <a href="{% url 'prospect_leads' %}" class="text-decoration-none flex-fill">
-            <div class="card text-center border-primary shadow-sm h-100 w-100 card-hover" style="min-width: 0; transition: transform 0.2s;">
+
+          <a href="{% url 'prospect_leads' %}" class="text-decoration-none flex-grow-1" style="min-width: 120px;">
+            <div class="stat-card card text-center border-primary shadow-sm h-100">
               <div class="card-body p-3">
                 <h6 class="text-primary fw-bold mb-1">Prospect</h6>
                 <h5 class="fw-bold">{{prospect_count}}</h5>
               </div>
             </div>
           </a>
-          <a href="{% url 'junk_leads' %}" class="text-decoration-none flex-fill">
-            <div class="card text-center border-secondary shadow-sm h-100 w-100 card-hover" style="min-width: 0; transition: transform 0.2s;">
+
+          <a href="{% url 'junk_leads' %}" class="text-decoration-none flex-grow-1" style="min-width: 120px;">
+            <div class="stat-card card text-center border-secondary shadow-sm h-100">
               <div class="card-body p-3">
                 <h6 class="text-secondary fw-bold mb-1">Junk</h6>
                 <h5 class="fw-bold">{{junk_count}}</h5>
               </div>
             </div>
           </a>
-          <a href="{% url 'lead_leads' %}" class="text-decoration-none flex-fill">
-            <div class="card text-center border-warning shadow-sm h-100 w-100 card-hover" style="min-width: 0; transition: transform 0.2s;">
+
+          <a href="{% url 'lead_leads' %}" class="text-decoration-none flex-grow-1" style="min-width: 120px;">
+            <div class="stat-card card text-center border-warning shadow-sm h-100">
               <div class="card-body p-3">
                 <h6 class="text-warning fw-bold mb-1">Lead</h6>
                 <h5 class="fw-bold">{{lead_count}}</h5>
               </div>
             </div>
           </a>
-          <a href="{% url 'lost_leads' %}" class="text-decoration-none flex-fill">
-            <div class="card text-center border-dark shadow-sm h-100 w-100 card-hover" style="min-width: 0; transition: transform 0.2s;">
+
+          <a href="{% url 'lost_leads' %}" class="text-decoration-none flex-grow-1" style="min-width: 120px;">
+            <div class="stat-card card text-center border-dark shadow-sm h-100">
               <div class="card-body p-3">
                 <h6 class="text-dark fw-bold mb-1">Lost</h6>
                 <h5 class="fw-bold">{{lost_count}}</h5>
               </div>
             </div>
           </a>
-          <a href="{% url 'hold_leads' %}" class="text-decoration-none flex-fill">
-            <div class="card text-center border-dark shadow-sm h-100 w-100 card-hover" style="min-width: 0; transition: transform 0.2s;">
+
+          <a href="{% url 'hold_leads' %}" class="text-decoration-none flex-grow-1" style="min-width: 120px;">
+            <div class="stat-card card text-center border-info shadow-sm h-100">
               <div class="card-body p-3">
-                <h6 class="text-dark fw-bold mb-1">Hold</h6>
+                <h6 class="text-info fw-bold mb-1">Hold</h6>
                 <h5 class="fw-bold">{{hold_count}}</h5>
               </div>
             </div>
           </a>
-          <a href="{% url 'sold_onboard_leads' %}" class="text-decoration-none flex-fill">
-            <div class="card text-center border-success shadow-sm h-100 w-100 card-hover" style="min-width: 0; transition: transform 0.2s;">
-              <div class="card-body p-3">
-                <h6 class="text-success fw-bold mb-1">Sold</h6>
+
+          <a href="{% url 'sold_onboard_leads' %}" class="text-decoration-none flex-grow-1" style="min-width: 120px;">
+            <div class="stat-card card text-center border-success shadow-sm h-100">
+              <div class="card-body p-3 bg-success text-white">
+                <h6 class="fw-bold mb-1">Sold</h6>
                 <h5 class="fw-bold">{{ sold_count }}</h5>
               </div>
             </div>
@@ -129,26 +109,85 @@
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Recent Leads Section -->
-    <section class="mb-5 px-4">
-      <h2 class="mb-3">Recent Leads</h2>
-      {% if recent_leads %}
-      <div class="table-responsive shadow-sm rounded">
-        <table class="table table-striped table-hover align-middle mb-0">
+ 
+  
+
+<div class="container mt-4">
+  <div class="row g-3 align-items-start">
+    <!-- Today's Follow Up -->
+    <div class="col-12 col-md-3">
+      <a href="#" class="text-decoration-none">
+        <div class="card shadow-sm rounded text-center p-3 h-100">
+          <div class="h2 fw-bold text-success">--</div>
+          <div class="small fw-semibold text-success">Follow Up Done</div>
+          <div class="text-muted small">Export completed follow-ups</div>
+        </div>
+      </a>
+    </div>
+        
+    <!-- Next Follow Up -->
+    <div class="col-12 col-md-3">
+      <a href="#" class="text-decoration-none">
+        <div class="card shadow-sm rounded text-center p-3 h-100">
+          <div class="h2 fw-bold text-secondary">--</div>
+          <div class="small fw-semibold text-secondary">Next Follow Up</div>
+          <div class="text-muted small">Upcoming follow-up tasks</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Missed Follow Up -->
+    <div class="col-12 col-md-3">
+      <a href="#" class="text-decoration-none">
+        <div class="card shadow-sm rounded text-center p-3 h-100">
+          <div class="h2 fw-bold text-danger">--</div>
+          <div class="small fw-semibold text-danger">Missed Follow Up</div>
+          <div class="text-muted small">Check missed follow-ups</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Follow Up Done (Excel) -->
+    <div class="col-12 col-md-3">
+      <a href="{% url 'followup_today' %}" class="text-decoration-none">
+        <div class="card shadow-sm rounded text-center p-3 h-100">
+          <div class="h2 fw-bold text-primary">{{ followup_today_count }}</div>
+          <div class="small fw-semibold text-primary">Today's Follow Up</div>
+          <div class="text-muted small">View scheduled follow-ups</div>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+  <!-- Recent Leads Section -->
+  <section class="recent-section container mb-5 px-3 px-md-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="mb-0">Recent Leads</h2>
+      <a href="{% url 'lead:leads_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+    </div>
+    
+    {% if recent_leads %}
+    <div class="table-responsive rounded shadow-sm">
+      <table class="data-table table table-hover align-middle mb-0">
         <thead class="table-dark">
           <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Number</th>
-          <th>Stage</th>
-          <th>Created By</th>
-          <th>Team Leader</th>
-          <th>Last Modified</th>
-          <th>Lead Source</th>
-          <th>Sub Source</th>
-          <th>Budget</th>
-          <th>Details</th>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Number</th>
+            <th>Stage</th>
+            <th>Created By</th>
+            <th>Last Modified</th>
+            <th>Source</th>
+            <th>Budget</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -157,50 +196,51 @@
             <td>{{ item.unique_id }}</td>
             <td>{{ item.name }}</td>
             <td>{{ item.phone|slice:":-3" }}***</td>
-
-
             <td class="
               {% if item.get_lead_status_display == 'Prospect' %}
-                bg-primary text-white
+                status-prospect
               {% elif item.get_lead_status_display == 'High Prospect' %}
-                bg-danger text-white
+                status-high-prospect
               {% elif item.get_lead_status_display == 'Sold/On-board' %}
-                bg-success text-white
+                status-sold
               {% endif %}">
               {{ item.get_lead_status_display }}
             </td>
             <td>{{ item.created_by }}</td>
-            <td>{{ item.teamleader }}</td>
-            <td>{{ item.last_modified|date:"Y-m-d H:i" }}</td>
-            <td>{{ item.leadsource}}</td>
-            <td>{{ item.subsource|default:"Not specified" }}</td>
-            <td>{{ item.budget|default:"Not specified" }}</td>
-            
+            <td>{{ item.last_modified|date:"M d, H:i" }}</td>
+            <td>{{ item.leadsource }}</td>
+            <td>{{ item.budget|default:"-" }}</td>
             <td>
-            <a href="{% url 'lead:lead_details' item.pk %}" class="btn btn-sm btn-info">Read More</a>
+              <a href="{% url 'lead:lead_details' item.pk %}" class="btn btn-sm btn-info">
+                <i class="bi bi-eye-fill"></i> View
+              </a>
             </td>
           </tr>
           {% endfor %}
         </tbody>
-        </table>
-      </div>
-      {% else %}
-      <p class="text-muted fst-italic">No recent leads found.</p>
-      {% endif %}
-    </section>
+      </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">No recent leads found.</div>
+    {% endif %}
+  </section>
 
-    <!-- Recent Clients Section -->
-    <section class="px-4">
-      <h2 class="mb-3">Recent Clients</h2>
-      {% if recent_clients %}
-      <div class="table-responsive shadow-sm rounded">
-        <table class="table table-striped table-hover align-middle mb-0">
+  <!-- Recent Clients Section -->
+  <section class="recent-section container px-3 px-md-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="mb-0">Recent Clients</h2>
+      <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+    </div>
+    
+    {% if recent_clients %}
+    <div class="table-responsive rounded shadow-sm">
+      <table class="data-table table table-hover align-middle mb-0">
         <thead class="table-dark">
           <tr>
-          <th>Name</th>
-          <th>Description</th>
-          <th class="text-center">Favorite</th>
-          <th>Details</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th class="text-center">Favorite</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -208,41 +248,149 @@
           <tr>
             <td>{{ client.name }}</td>
             <td>
-            {% if client.get_description_display %}
-              {{ client.get_description_display }}
-            {% else %}
-              {{ client.description }}
-            {% endif %}
+              {{ client.get_description_display|default:client.description|truncatechars:50 }}
             </td>
             <td class="text-center">
-            <button class="btn btn-link p-0 star-icon" aria-label="Toggle Favorite" onclick="toggleStar('{{ client.pk }}')">⭐</button>
+              <button class="btn btn-link p-0 star-icon" aria-label="Toggle Favorite" onclick="toggleStar('{{ client.pk }}')">
+                <i class="bi bi-star{% if client.is_favorite %}-fill text-warning{% endif %}"></i>
+              </button>
             </td>
             <td>
-            <a href="{% url 'clients_detail' client.pk %}" class="btn btn-sm btn-info">Read More</a>
+              <a href="{% url 'clients_detail' client.pk %}" class="btn btn-sm btn-info">
+                <i class="bi bi-eye-fill"></i> View
+              </a>
             </td>
           </tr>
           {% endfor %}
         </tbody>
-        </table>
-      </div>
-      {% else %}
-      <p class="text-muted fst-italic">No recent clients found.</p>
-      {% endif %}
-    </section>
-  </div>
+      </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">No recent clients found.</div>
+    {% endif %}
+  </section>
 </div>
 
 <style>
-  .card-hover:hover {
-    transform: translateY(-8px) scale(1.03);
-    box-shadow: 0 8px 24px rgba(99,102,241,0.15);
-    border-width: 2px;
+  /* Base Styles */
+  .dashboard-container {
+    background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+  }
+  
+  /* Hero Section */
+  .hero-section {
+    background: #1b84ca;
+    min-height: 120px;
+  }
+  
+  .hero-title {
+    font-size: 1.7rem;
+    font-weight: 700;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.1rem;
+  }
+  
+  .dashboard-logo {
+    max-width: 90px; 
+    max-height: 50px;
+  }
+  
+  /* Card Styles */
+  .stat-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  }
+  
+  /* Status Colors */
+  .status-prospect {
+    background-color: #3b82f6;
+    color: white;
+  }
+  
+  .status-high-prospect {
+    background-color: #ef4444;
+    color: white;
+  }
+  
+  .status-sold {
+    background-color: #10b981;
+    color: white;
+  }
+  
+  /* Table Styles */
+  .data-table {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+  
+  .data-table th {
+    background-color: #1f2937;
+    color: white;
+    font-weight: 600;
+  }
+  
+  .data-table tr:hover {
+    background-color: #f9fafb;
+  }
+  
+  /* Star Icon */
+  .star-icon {
+    transition: all 0.2s ease;
+  }
+  
+  .star-icon:hover {
+    transform: scale(1.2);
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .hero-title {
+      font-size: 1.4rem;
+    }
+    
+    .hero-subtitle {
+      font-size: 1rem;
+    }
+    
+    .stat-card {
+      margin-bottom: 1rem;
+    }
+    
+    .recent-section {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
   }
 </style>
 
 <script>
   function toggleStar(pk) {
-    alert('Toggle favorite for ID: ' + pk);
+    fetch(`/clients/${pk}/toggle-favorite/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({}),
+    })
+    .then(response => response.json())
+    .then(data => {
+      const starIcon = document.querySelector(`button[onclick="toggleStar('${pk}')"] i`);
+      if (data.is_favorite) {
+        starIcon.classList.remove('bi-star');
+        starIcon.classList.add('bi-star-fill', 'text-warning');
+      } else {
+        starIcon.classList.remove('bi-star-fill', 'text-warning');
+        starIcon.classList.add('bi-star');
+      }
+    })
+    .catch(error => console.error('Error:', error));
   }
 </script>
 {% endblock %}

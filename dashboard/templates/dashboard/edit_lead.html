@@ -11,16 +11,17 @@
           <h4 class="mb-0">Edit Lead Details</h4>
         </div>
         <div class="card-body">
-          <form method="post" novalidate>
-            {% csrf_token %}
-            {{ form.as_p }}
-            <div class="text-end mt-3">
-              <button type="submit" class="btn btn-primary px-4">Save</button>
-            </div>
-          </form>
+       <form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="hidden" name="redirect_to" value="{{ redirect_to }}">
+    <button type="submit">Save</button>
+</form>
+
+
         </div>
       </div>
     </div>
-  </div>
+  </div> 
 </div>
 {% endblock %}

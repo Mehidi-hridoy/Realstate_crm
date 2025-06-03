@@ -8,7 +8,7 @@ from django.contrib import messages
 from client.models import Client
 from teams.models import Team
 from django.db.models import Count
-from datetime import datetime
+from datetime import datetime,date
 from django.utils.timezone import now
 from collections import defaultdict
 from django.utils.timezone import localtime
@@ -77,28 +77,7 @@ def leads_delete(request, pk):
     return redirect('leads_list')
 
 
-@login_required
-def edit_leads(request, pk):
-    # Ensure the lead exists and belongs to the logged-in user
-    lead = get_object_or_404(Lead, pk=pk, created_by=request.user)
 
-    if request.method == "POST":
-        form = AddLeadForm(request.POST, instance=lead)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "The changes were saved successfully.")
-            return redirect("leads_list")
-        else:
-            messages.error(request, "Please correct the error(s) below.")
-    else:
-        form = AddLeadForm(instance=lead)
-
-    context = {
-        "form": form,
-        "lead": lead,
-    }
-
-    return render(request, "lead/edit_lead.html", context)
 
 @login_required
 def convert_to_client(request, pk):
@@ -127,8 +106,11 @@ def convert_to_client(request, pk):
 
 
 
+
+
+
 @login_required
-def update_followup(request, pk):
+def lead_followup_and_history(request, pk):
     lead = get_object_or_404(Lead, id=pk)
 
     lead_status_choices = Lead.LEAD_STAGE_CHOICES
@@ -137,10 +119,14 @@ def update_followup(request, pk):
 
     if request.method == "POST":
         new_status = request.POST.get('lead_status')
-        new_description = request.POST.get('description', '')
+        new_description = request.POST.get('description', '').strip()
         new_followup_date_str = request.POST.get('next_followup_date')
         new_project_type = request.POST.get('project_type')
         new_followup_method = request.POST.get('followup_method', '')
+
+        if not new_followup_date_str:
+            messages.error(request, "Next Follow-up Date is required to submit the update.")
+            return redirect(request.path)
 
         changes = []
 
@@ -152,29 +138,35 @@ def update_followup(request, pk):
         # Description
         if lead.description != new_description:
             changes.append(('description', lead.description, new_description))
-            lead.description = new_description or ''
+            lead.description = new_description
 
-        # Next Follow-up Date
-        if new_followup_date_str:
-            try:
-                new_followup_date = datetime.strptime(new_followup_date_str, '%Y-%m-%d').date()
-                if lead.next_followup_date != new_followup_date:
-                    changes.append(('next_followup_date', lead.next_followup_date, new_followup_date))
-                    lead.next_followup_date = new_followup_date
-            except ValueError:
-                pass
+        if request.method == "POST":
+            new_followup_date_str = request.POST.get('next_followup_date')
+
+            if not new_followup_date_str:
+                messages.error(request, "Next Follow-up Date is required to submit the update.")
+                return redirect(request.path)
 
         # Project Type
         if new_project_type and getattr(lead, 'projecttype', None) != new_project_type:
-            changes.append(('projecttype', lead.projecttype, new_project_type))
+            changes.append(('projecttype', getattr(lead, 'projecttype', ''), new_project_type))
             lead.projecttype = new_project_type
 
-        # Follow-up Method
-        if hasattr(lead, 'next_followup_by') and lead.next_followup_by != new_followup_method:
-            changes.append(('next_followup_by', lead.next_followup_by, new_followup_method))
-            lead.next_followup_by = new_followup_method or ''
 
-        # Save changes and log
+        # ✅ Insert this next:
+        if hasattr(lead, 'next_followup_date'):
+            new_followup_date = datetime.strptime(new_followup_date_str, '%Y-%m-%d').date()
+
+            if new_followup_date <= date.today():
+                messages.error(request, "Next Follow-up Date must be later than today.")
+                return redirect(request.path)
+
+            if lead.next_followup_date != new_followup_date:
+                changes.append(('next_followup_date', lead.next_followup_date, new_followup_date))
+                lead.next_followup_date = new_followup_date
+
+                
+
         if changes:
             lead.modified_at = now()
             lead.save()
@@ -190,36 +182,15 @@ def update_followup(request, pk):
 
         return redirect('lead:leads_list')
 
-    # GET method: render form
-    return render(request, 'lead/update_followup.html', {
-        'lead': lead,
-        'lead_status_choices': lead_status_choices,
-        'followup_methods': followup_methods,
-        'project_type_choices': project_type_choices,
-        'description': lead.description or '',
-        'project_status': getattr(lead, 'projecttype', ''),  # FIXED: Match model field
-        'last_comment': getattr(lead, 'last_comment', ''),
-        'followup_method': getattr(lead, 'next_followup_by', ''),
-    })
-
-
-
-
-
-
-
-
-@login_required
-def lead_change_history(request, pk):
-    lead = get_object_or_404(Lead, pk=pk)
+    # GET request — show form and history logs
     logs = LeadChangeLog.objects.filter(lead=lead).order_by('change_date')
 
     grouped_logs = defaultdict(list)
     for log in logs:
-        dt = localtime(log.change_date).strftime('%Y-%m-%d %H:%M')  # group by minute
+        dt = localtime(log.change_date).strftime('%Y-%m-%d %H:%M')
         grouped_logs[dt].append(log)
 
-    last_stage = lead.lead_status or "(blank)"  # Default to lead's initial stage
+    last_stage = lead.lead_status or "(blank)"
     grouped_data = []
 
     for dt, logs_group in sorted(grouped_logs.items()):
@@ -228,16 +199,16 @@ def lead_change_history(request, pk):
         next_followup_date = None
 
         for log in logs_group:
-            if log.field_name.lower() == 'lead_status':
-                lead_status_old = log.old_value or last_stage or "(blank)"
-                lead_status_new = log.new_value or last_stage or "(blank)"
-            if log.field_name.lower() == 'next_followup_date':
+            field = log.field_name.lower()
+            if field == 'lead_status':
+                lead_status_old = log.old_value or last_stage
+                lead_status_new = log.new_value or last_stage
+            elif field == 'next_followup_date':
                 next_followup_date = log.new_value
 
-        # If no stage info was found in this group, use the last known stage
         if lead_status_old is None and lead_status_new is None:
-            lead_status_old = last_stage or "(blank)"
-            lead_status_new = last_stage or "(blank)"
+            lead_status_old = last_stage
+            lead_status_new = last_stage
 
         grouped_data.append({
             'datetime': dt,
@@ -247,20 +218,22 @@ def lead_change_history(request, pk):
             'lead_status_new': lead_status_new,
         })
 
-        # Update last_stage after appending to use in next iteration
         if lead_status_new and lead_status_new != "(blank)":
             last_stage = lead_status_new
 
-    grouped_data = list(reversed(grouped_data))
+    grouped_data.reverse()
 
-    return render(request, 'lead/lead_change_history.html', {
+    return render(request, 'lead/lead_followup_and_history.html', {
         'lead': lead,
+        'lead_status_choices': lead_status_choices,
+        'followup_methods': followup_methods,
+        'project_type_choices': project_type_choices,
+        'description': lead.description or '',
+        'project_status': getattr(lead, 'projecttype', ''),
+        'last_comment': getattr(lead, 'last_comment', ''),
+        'followup_method': getattr(lead, 'next_followup_by', ''),
         'grouped_data': grouped_data,
     })
-
-
-
-
 
 
 

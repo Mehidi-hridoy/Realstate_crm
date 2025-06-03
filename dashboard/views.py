@@ -1,4 +1,6 @@
 
+from lead.forms import   AddLeadForm
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from lead.models import Lead
 from django.shortcuts import render, redirect, get_object_or_404
@@ -13,6 +15,7 @@ from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.db.models import Q, F
 from lead.utils import get_followup_today_count  # adjust import path as needed
+
 
 @login_required
 def dashboard(request):
@@ -145,19 +148,59 @@ def followup_next(request):
 
 
 @login_required
+def edit_leads(request, pk):
+    lead = get_object_or_404(Lead, pk=pk)
+
+    # Determine redirect target (from POST on save, or GET when loading form)
+    redirect_to = request.POST.get('redirect_to') if request.method == "POST" else request.GET.get('redirect_to', 'lead_leads')
+
+    if request.method == "POST":
+        form = AddLeadForm(request.POST, instance=lead)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "The changes were saved successfully.")
+
+            # Redirect based on lead type
+            if redirect_to in [
+                'prospect_leads', 'junk_leads', 'high_priority_leads',
+                'lost_leads', 'sold_onboard_leads', 'hold_leads', 'lead_leads'
+            ]:
+                return redirect(redirect_to)
+            else:
+                return redirect('lead_leads')  # default fallback
+        else:
+            messages.error(request, "Please correct the error(s) below.")
+    else:
+        form = AddLeadForm(instance=lead)
+
+    context = {
+        "form": form,
+        "lead": lead,
+        "redirect_to": redirect_to,  # Pass to template
+    }
+
+    return render(request, "dashboard/edit_lead.html", context)
+
+
+@login_required
+def lead_leads(request):
+    if request.user.is_superuser:
+        leads = Lead.objects.filter(lead_status='lead')
+    else:
+        leads = Lead.objects.filter(created_by=request.user, lead_status='lead')
+    total_leads = leads.count()
+    return render(request, 'dashboard/lead_leads.html', {
+        'leads': leads,
+        'total_leads': total_leads,
+    })
+
+
+@login_required
 def high_priority_leads(request):
     if request.user.is_superuser:
-        # Admin can see all high priority leads
         leads = Lead.objects.filter( lead_status='high_prospect')
     else:
-        # Normal user can only see their own team's leads created by them
-        team = Team.objects.filter(created_by=request.user).first()
-        leads = Lead.objects.filter(
-            team=team,
-            created_by=request.user,
-             
-            lead_status='high_prospect')  # use actual stored value here
-        
+        leads = Lead.objects.filter( created_by=request.user,  lead_status='high_prospect')  # use actual stored value here
     total_high_priority_leads = leads.count()
     return render(request, 'dashboard/high_priority_leads.html', {
         'leads': leads,
@@ -171,12 +214,7 @@ def prospect_leads(request):
         leads = Lead.objects.filter( lead_status='prospect')
     else:
         # Normal user can only see their own team's leads created by them
-        team = Team.objects.filter(created_by=request.user).first()
-        leads = Lead.objects.filter(
-            team=team,
-            created_by=request.user,
-            
-            lead_status='prospect'
+        leads = Lead.objects.filter( created_by=request.user,lead_status='prospect'
         )
     total_prospect_leads = leads.count()
 
@@ -185,22 +223,7 @@ def prospect_leads(request):
         'total_prospect_leads': total_prospect_leads,
     })
 
-"""@login_required
-def prospect_leads(request):
-    team = Team.objects.filter(created_by=request.user).first()
-    if request.user.is_superuser:
-        leads = Lead.objects.filter(team=team,  lead_status='prospect')
-    else:
-        leads = Lead.objects.filter(team=team, created_by=request.user,  lead_status='prospect')
-    total_prospect_leads = leads.count()
-    
 
-    return render(request, 'dashboard/prospect_leads.html', {
-        'leads': leads,
-        'total_prospect_leads': total_prospect_leads,
-        
-        })
-"""
 @login_required
 def junk_leads(request):
     # Check if the user is a superuser
@@ -209,35 +232,13 @@ def junk_leads(request):
         leads = Lead.objects.filter( lead_status='junk')
     else:
         # Normal user can only see their own team's leads created by them
-        team = Team.objects.filter(created_by=request.user).first()
-        leads = Lead.objects.filter(
-            team=team, 
-            
-            lead_status='junk')
+        leads = Lead.objects.filter(created_by=request.user,lead_status='junk')
     total_junk_leads = leads.count()  # This line is not used, so it can be removed
 
     return render(request, 'dashboard/junk_leads.html', {
         'leads': leads,
         'total_junk_leads': total_junk_leads,})
 
-@login_required
-def lead_leads(request):
-    if request.user.is_superuser:
-        # Admin can see all leads
-        leads = Lead.objects.filter( lead_status='lead')
-    else:
-        # Normal user can only see their own team's leads created by them
-        team = Team.objects.filter(created_by=request.user).first()
-        leads=Lead.objects.filter(
-            team=team,
-            
-            lead_status='lead')
-    tolal_leads = leads.count()
-    #leads = Lead.objects.filter(team=team, lead_status='lead') if team else []
-
-    return render(request, 'dashboard/lead_leads.html', {
-        'leads': leads,
-        'tolal_leads': tolal_leads,})
 
 @login_required
 def lost_leads(request):
@@ -247,11 +248,7 @@ def lost_leads(request):
         leads = Lead.objects.filter( lead_status='lost')
     else:
             # Normal user can only see their own team's leads created by them
-        team = Team.objects.filter(created_by=request.user).first()
-        leads = Lead.objects.filter(
-        team=team,
-         
-        lead_status='lost') 
+        leads = Lead.objects.filter( created_by=request.user, lead_status='lost') 
     total_lost_leads = leads.count()
     return render(request, 'dashboard/lost_leads.html', {
         'leads': leads,
@@ -267,11 +264,8 @@ def sold_leads(request):
         leads = Lead.objects.filter( lead_status='sold_onboard')
     else:
             # Normal user can only see their own team's leads created by them
-        team = Team.objects.filter(created_by=request.user).first()
-        leads = Lead.objects.filter(
-            team=team, 
-            
-            lead_status='sold_onboard') 
+        
+        leads = Lead.objects.filter(created_by=request.user, lead_status='sold_onboard') 
     total_sold_leads = leads.count()
 
     return render(request, 'dashboard/sold_leads.html', {
@@ -288,8 +282,7 @@ def hold_leads(request):
         leads = Lead.objects.filter( lead_status='hold')
     else:
             # Normal user can only see their own team's leads created by them
-        team = Team.objects.filter(created_by=request.user).first()
-        leads = Lead.objects.filter(team=team,  lead_status='hold') 
+        leads = Lead.objects.filter(created_by=request.user, lead_status='hold') 
     total_hold_leads = leads.count()
 
     return render(request, 'dashboard/hold_leads.html', {

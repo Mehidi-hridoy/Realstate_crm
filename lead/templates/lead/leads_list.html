@@ -3,103 +3,166 @@
 {% block title %}Lead List{% endblock %}
 
 {% block content %}
-<style>
-    .bg-deep-blue {
-        background-color: #003366 !important;
-        color: white !important;
-    }
-    input.filter-input {
-        width: 100%;
-        font-size: 0.8rem;
-        padding: 2px 4px;
-        box-sizing: border-box;
-    }
-</style>
-
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h4 fw-semibold mb-0">
-        Lead List {% if total_leads is not None %}({{ total_leads }}){% endif %}
-    </h1>
-    <a class="btn btn-outline-primary btn-sm" href="{% url 'lead:addlead' %}">+ Add Lead</a>
-</div>
-
-
-
-<!-- Filtered Count Card -->
-<div class="card mb-3">
-    <div class="card-body p-2">
-        <strong>Filtered Leads:</strong> <span id="filteredCount">{{ leads|length }}</span>
+<div class="lead-list-container container-fluid px-3 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h4 fw-semibold mb-1">
+                All Lead List {% if total_leads is not None %}<span class="badge bg-primary ms-2">{{ total_leads }}</span>{% endif %}
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Leads</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a class="btn btn-primary btn-sm" href="{% url 'lead:addlead' %}">
+                <i class="bi bi-plus-lg me-1"></i> Add Lead
+            </a>
+        </div>
     </div>
+
+    <!-- Filtered Count Card -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body py-2 px-3 d-flex justify-content-between align-items-center">
+            <div>
+                <strong class="me-2">Filtered Leads:</strong> 
+                <span id="filteredCount" class="badge bg-info text-dark">{{ leads|length }}</span>
+            </div>
+            <div>
+                <button class="btn btn-sm btn-outline-secondary" onclick="resetFilters()">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Filters
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {% if leads %}
+    <div class="table-responsive rounded-3 border shadow-sm">
+        <table class="table table-hover mb-0" id="leadTable">
+            <thead class="table-light">
+                <tr>
+                    <th class="align-middle">ID
+                        <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(1, this.value)" placeholder="Filter...">
+                    </th>
+                    <th class="align-middle">Name
+                        <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(2, this.value)" placeholder="Filter...">
+                    </th>
+                    <th class="align-middle">Number
+                        <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(3, this.value)" placeholder="Filter...">
+                    </th>
+                    <th class="align-middle">Created By
+                        <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(4, this.value)" placeholder="Filter...">
+                    </th>
+                    <th class="align-middle">Created Date
+                        <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(5, this.value)" placeholder="Filter...">
+                    </th>
+                    <th class="align-middle">Team Leader
+                        <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(6, this.value)" placeholder="Filter...">
+                    </th>
+                    <th class="align-middle">Lead Source
+                        <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(7, this.value)" placeholder="Filter...">
+                    </th>
+                    <th class="align-middle">Sub Source
+                        <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(8, this.value)" placeholder="Filter...">
+                    </th>
+                    <th class="align-middle">Budget
+                        <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(9, this.value)" placeholder="Filter...">
+                    </th>
+                    <th class="align-middle">Stage
+                        <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(10, this.value)" placeholder="Filter...">
+                    </th>
+                    <th class="align-middle">Email
+                        <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(11, this.value)" placeholder="Filter...">
+                    </th>
+                    <th class="align-middle">Next Follow-Up
+                        <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(12, this.value)" placeholder="Filter...">
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lead in leads %}
+                <tr class="align-middle">
+                    <td>{{ lead.unique_id }}</td>
+                    <td>
+                        <a href="{% url 'lead:lead_change_history' lead.id %}" class="text-decoration-none">
+                            {{ lead.name }}
+                        </a>
+                    </td>
+                    <td>{{ lead.phone|default:"-" }}</td>
+                    <td>{{ lead.created_by|default:"-" }}</td>
+                    <td>{{ lead.created_at|date:"Y-m-d" }}</td>
+                    <td>{{ lead.teamleader|default:"-" }}</td>
+                    <td>{{ lead.leadsource|default:"-" }}</td>
+                    <td>{{ lead.subsource|default:"-" }}</td>
+                    <td>{{ lead.budget|default:"-" }}</td>
+                    <td class="lead-status-{{ lead.lead_status|lower }}">
+                        {{ lead.get_lead_status_display }}
+                    </td>
+                    <td>
+                        {% if lead.primaryemail %}
+                        <a href="mailto:{{ lead.primaryemail }}" class="text-decoration-none">
+                            {{ lead.primaryemail|truncatechars:15 }}
+                        </a>
+                        {% else %}-{% endif %}
+                    </td>
+                    <td>{{ lead.next_followup_date|default:"-" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-light border text-center py-4" role="alert">
+        <i class="bi bi-info-circle-fill me-2"></i> No leads found.
+    </div>
+    {% endif %}
 </div>
 
-{% if leads %}
-<div class="table-responsive shadow-sm rounded border">
-    <table class="table table-hover table-striped mb-0" id="leadTable">
-        <thead class="table-dark">
-            <tr>
-                <th>ID<br><input type="text" class="filter-input" onkeyup="filterColumn(1, this.value)" placeholder="Filter ID"></th>
-                <th>Name<br><input type="text" class="filter-input" onkeyup="filterColumn(2, this.value)" placeholder="Filter Name"></th>
-                <th>Number<br><input type="text" class="filter-input" onkeyup="filterColumn(3, this.value)" placeholder="Filter Number"></th>
-                <th>Created By<br><input type="text" class="filter-input" onkeyup="filterColumn(4, this.value)" placeholder="Filter Creator"></th>
-                <th>Created Date<br><input type="text" class="filter-input" onkeyup="filterColumn(5, this.value)" placeholder="Filter Date"></th>
-                <th>Team Leader<br><input type="text" class="filter-input" onkeyup="filterColumn(6, this.value)" placeholder="Filter Team Leader"></th>
-                <th>Lead Source<br><input type="text" class="filter-input" onkeyup="filterColumn(7, this.value)" placeholder="Filter Source"></th>
-                <th>Sub Source<br><input type="text" class="filter-input" onkeyup="filterColumn(8, this.value)" placeholder="Filter Sub Source"></th>
-                <th>Budget<br><input type="text" class="filter-input" onkeyup="filterColumn(9, this.value)" placeholder="Filter Budget"></th>
-                <th>Stage<br><input type="text" class="filter-input" onkeyup="filterColumn(10, this.value)" placeholder="Filter Stage"></th>
-                <th>Email<br><input type="text" class="filter-input" onkeyup="filterColumn(11, this.value)" placeholder="Filter Email"></th>
-                
-                <th>Next Follow-Up<br><input type="text" class="filter-input" onkeyup="filterColumn(13, this.value)" placeholder="Filter Date"></th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for lead in leads %}
-            <tr>
-                <td><a href="{% url 'lead:update_followup' lead.id %}">{{ lead.unique_id }}</a></td>
-                <td><a href="{% url 'lead:lead_change_history' lead.id %}">{{ lead.name }}</a></td>
-                
-                <td>{{ lead.phone }}</td>
-                <td>{{ lead.created_by }}</td>
-                <td>{{ lead.created_at|date:"Y-m-d" }}</td>
-                <td>{{ lead.teamleader }}</td>
-                <td>{{ lead.leadsource }}</td>
-                <td>{{ lead.subsource }}</td>
-                <td>{{ lead.budget|default:"Not specified" }}</td>
-                <td class="{% if lead.get_lead_status_display == 'Prospect' %}bg-primary text-white{% endif %}">
-                    {{ lead.get_lead_status_display }}
-                </td>
-                <td>{{ lead.primaryemail }}</td>
-                <td>{{ lead.next_followup_date }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-{% else %}
-<div class="alert alert-light border text-center" role="alert">
-    No leads found.
-</div>
-{% endif %}
 
-<!-- JavaScript for filtering and count update -->
 <script>
-function filterColumn(colIndex, query) {
-    const table = document.querySelector("#leadTable");
-    const rows = table.querySelectorAll("tbody tr");
-    const filter = query.toLowerCase();
-    let visibleCount = 0;
-
-    rows.forEach(row => {
-        const cell = row.cells[colIndex - 1];
-        if (cell) {
-            const text = cell.textContent.toLowerCase();
-            const match = text.includes(filter);
-            row.style.display = match ? "" : "none";
-            if (match) visibleCount++;
-        }
+    // Initialize data labels for mobile view
+    document.addEventListener('DOMContentLoaded', function() {
+        const headers = document.querySelectorAll('#leadTable thead th');
+        const rows = document.querySelectorAll('#leadTable tbody tr');
+        
+        headers.forEach((header, index) => {
+            const text = header.textContent.trim().replace(/\n/g, '').replace(/Filter\.\.\./g, '');
+            rows.forEach(row => {
+                if (row.cells[index]) {
+                    row.cells[index].setAttribute('data-label', text);
+                }
+            });
+        });
     });
 
-    document.getElementById("filteredCount").textContent = visibleCount;
-}
+    function filterColumn(colIndex, query) {
+        const table = document.querySelector("#leadTable");
+        const rows = table.querySelectorAll("tbody tr");
+        const filter = query.toLowerCase();
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const cell = row.cells[colIndex - 1];
+            if (cell) {
+                const text = cell.textContent.toLowerCase();
+                const match = text.includes(filter);
+                row.style.display = match ? "" : "none";
+                if (match) visibleCount++;
+            }
+        });
+
+        document.getElementById("filteredCount").textContent = visibleCount;
+    }
+
+    function resetFilters() {
+        const inputs = document.querySelectorAll('#leadTable thead input');
+        inputs.forEach(input => {
+            input.value = '';
+            const colIndex = Array.from(input.parentElement.parentElement.cells).indexOf(input.parentElement) + 1;
+            filterColumn(colIndex, '');
+        });
+    }
 </script>
 {% endblock %}
