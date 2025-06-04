@@ -1,5 +1,4 @@
 {% extends 'crm/base.html' %}
-
 {% load static %}
 
 {% block title %}Dashboard{% endblock %}
@@ -7,353 +6,487 @@
 {% block content %}
 <div class="dashboard-container container-fluid p-0 m-0 min-vh-100" style="overflow-x: hidden;">
 
-  <!-- Hero Section -->
-  <div class="hero-section row align-items-center justify-content-center py-3 m-0">
-    <div class="col-12 col-md-6 text-white text-center py-2">
-      <h1 class="hero-title fw-bold mb-2">
-        Welcome {{ user.first_name }} {{ user.last_name }} ({{ user.username }}) to Your Dashboard
-      </h1>
-      <p class="hero-subtitle lead mb-2">
-        Track your leads and clients visually and efficiently.
-      </p>
-    </div>
-    <div class="col-12 col-md-6 text-center py-2">
-      <svg width="90" height="50" viewBox="0 0 220 120" fill="none" xmlns="http://www.w3.org/2000/svg" class="dashboard-logo">
-        <ellipse cx="110" cy="60" rx="100" ry="50" fill="#a5b4fc"/>
-        <ellipse cx="110" cy="60" rx="70" ry="35" fill="#818cf8"/>
-        <circle cx="110" cy="60" r="25" fill="#6366f1"/>
-        <text x="110" y="65" text-anchor="middle" fill="#fff" font-size="18" font-family="Arial" font-weight="bold">CRM</text>
-      </svg>
-    </div>
-  </div>
-
-  <!-- Stats Cards Section -->
-  <div class="stats-section container my-4">
-    
-
-    <!-- Lead Status Cards -->
-    <div class="row mt-4 g-2">
-      <div class="col-12">
-        <div class="d-flex flex-row flex-wrap justify-content-center gap-2">
-          <a href="{% url 'lead:leads_list' %}" class="text-decoration-none flex-grow-1" style="min-width: 120px;">
-            <div class="stat-card card text-center border-danger shadow-sm h-100">
-              <div class="card-body p-3 bg-danger text-white">
-                <h6 class="fw-bold mb-1">Total Active Leads</h6>
-                <h5 class="fw-bolder" style="font-size: 2.2rem;">{{total_leads}}</h5>
-              </div>
-            </div>
-          </a>
-          
-          <a href="{% url 'high_priority_leads' %}" class="text-decoration-none flex-grow-1" style="min-width: 120px;">
-            <div class="stat-card card text-center border-danger shadow-sm h-100">
-              <div class="card-body p-3">
-                <h6 class="text-danger fw-bold mb-1">High Priority</h6>
-                <h5 class="fw-bold">{{high_prospect_count}}</h5>
-              </div>
-            </div>
-          </a>
-
-          <a href="{% url 'prospect_leads' %}" class="text-decoration-none flex-grow-1" style="min-width: 120px;">
-            <div class="stat-card card text-center border-primary shadow-sm h-100">
-              <div class="card-body p-3">
-                <h6 class="text-primary fw-bold mb-1">Prospect</h6>
-                <h5 class="fw-bold">{{prospect_count}}</h5>
-              </div>
-            </div>
-          </a>
-
-          <a href="{% url 'junk_leads' %}" class="text-decoration-none flex-grow-1" style="min-width: 120px;">
-            <div class="stat-card card text-center border-secondary shadow-sm h-100">
-              <div class="card-body p-3">
-                <h6 class="text-secondary fw-bold mb-1">Junk</h6>
-                <h5 class="fw-bold">{{junk_count}}</h5>
-              </div>
-            </div>
-          </a>
-
-          <a href="{% url 'lead_leads' %}" class="text-decoration-none flex-grow-1" style="min-width: 120px;">
-            <div class="stat-card card text-center border-warning shadow-sm h-100">
-              <div class="card-body p-3">
-                <h6 class="text-warning fw-bold mb-1">Lead</h6>
-                <h5 class="fw-bold">{{lead_count}}</h5>
-              </div>
-            </div>
-          </a>
-
-          <a href="{% url 'lost_leads' %}" class="text-decoration-none flex-grow-1" style="min-width: 120px;">
-            <div class="stat-card card text-center border-dark shadow-sm h-100">
-              <div class="card-body p-3">
-                <h6 class="text-dark fw-bold mb-1">Lost</h6>
-                <h5 class="fw-bold">{{lost_count}}</h5>
-              </div>
-            </div>
-          </a>
-
-          <a href="{% url 'hold_leads' %}" class="text-decoration-none flex-grow-1" style="min-width: 120px;">
-            <div class="stat-card card text-center border-info shadow-sm h-100">
-              <div class="card-body p-3">
-                <h6 class="text-info fw-bold mb-1">Hold</h6>
-                <h5 class="fw-bold">{{hold_count}}</h5>
-              </div>
-            </div>
-          </a>
-
-          <a href="{% url 'sold_onboard_leads' %}" class="text-decoration-none flex-grow-1" style="min-width: 120px;">
-            <div class="stat-card card text-center border-success shadow-sm h-100">
-              <div class="card-body p-3 bg-success text-white">
-                <h6 class="fw-bold mb-1">Sold</h6>
-                <h5 class="fw-bold">{{ sold_count }}</h5>
-              </div>
-            </div>
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-
- 
   
 
-<div class="container mt-4">
-  <div class="row g-3 align-items-start">
-    <!-- Today's Follow Up -->
-    <div class="col-12 col-md-3">
-      <a href="{% url 'scheduled_followups' %}" class="text-decoration-none">
-        <div class="card shadow-sm rounded text-center p-3 h-100">
-          <div class="h2 fw-bold text-success">{{ today_scheduled_count   }}</div>
-          <div class="small fw-semibold text-success">Todays Follow Up</div>
-          <div class="text-muted small">View scheduled follow-ups</div>
-        </div>
-      </a>
-    </div>
-        
-    <!-- Next Follow Up -->
-    <div class="col-12 col-md-3">
-      <a href="{% url 'upcoming_followup' %}"" class="text-decoration-none">
-        <div class="card shadow-sm rounded text-center p-3 h-100">
-          <div class="h2 fw-bold text-secondary">{{upcoming_count}}</div>
-          <div class="small fw-semibold text-secondary">Upcoming Follow Up</div>
-          <div class="text-muted small">Upcoming follow-up tasks</div>
-        </div>
-      </a>
-    </div>
 
-    <!-- Missed Follow Up -->
-    <div class="col-12 col-md-3">
-      <a href="{% url 'missed_followups' %}" class="text-decoration-none">
-        <div class="card shadow-sm rounded text-center p-3 h-100">
-          <div class="h2 fw-bold text-danger">{{ missed_followup_count }}</div>
-          <div class="small fw-semibold text-danger">Missed Follow Up</div>
-          <div class="text-muted small">Check missed follow-ups</div>
-        </div>
-      </a>
-    </div>
 
-    <!-- Follow Up Done (Excel) -->
-    <div class="col-12 col-md-3">
-      <a href="{% url 'followup_today' %}" class="text-decoration-none">
-        <div class="card shadow-sm rounded text-center p-3 h-100">
-          <div class="h2 fw-bold text-primary">{{ followup_today_count }}</div>
-          <div class="small fw-semibold text-primary">Follow Up Done Today</div>
-          <div class="text-muted small">Export completed follow-ups</div>
-        </div>
-      </a>
-    </div>
+
+
+<!-- Hero Section -->
+<style>
+  .hero-section {
+    background: linear-gradient(135deg, #6366f1, #a5b4fc);
+    border-radius: 0 0 30px 30px;
+    animation: floatFade 1s ease-in-out;
+    margin-top: -8px;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .hero-title {
+    font-size: 2rem;
+    position: relative;
+    display: inline-block;
+    transition: transform 0.4s ease;
+    cursor: pointer;
+  }
+
+  .hero-title:hover {
+  animation: floatText 1.2s ease-in-out infinite alternate;
+  background: linear-gradient(to right, #fff, #c7d2fe);
+  background-clip: text; /* ✅ Standard version */
+  -webkit-background-clip: text; /* ✅ Vendor-prefixed version for WebKit browsers */
+  -webkit-text-fill-color: transparent;
+}
+
+
+  .hero-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    transition: all 0.4s ease;
+  }
+
+  .dashboard-logo {
+    transition: transform 0.8s ease;
+    animation: pulseGlow 2.5s ease-in-out infinite;
+  }
+
+  .dashboard-logo:hover {
+    transform: scale(1.1) rotate(2deg);
+  }
+
+  @keyframes floatText {
+    0% {
+      transform: translateY(0px);
+    }
+    100% {
+      transform: translateY(-6px);
+    }
+  }
+
+  @keyframes pulseGlow {
+    0% {
+      filter: drop-shadow(0 0 5px #a5b4fc);
+    }
+    50% {
+      filter: drop-shadow(0 0 15px #6366f1);
+    }
+    100% {
+      filter: drop-shadow(0 0 5px #a5b4fc);
+    }
+  }
+
+  @keyframes floatFade {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+
+<div class="hero-section row align-items-center justify-content-center m-0">
+  <div class="col-12 col-md-6 text-white text-center py-2">
+    <h1 class="hero-title fw-bold mb-2">
+      Welcome 
+      {% if user.first_name and user.last_name %}
+        {{ user.first_name }} {{ user.last_name }}
+      {% else %}
+        {{ user.username }}
+      {% endif %}
+      to Your Dashboard
+    </h1>
+    <p class="hero-subtitle lead mb-2">
+      Track your leads and clients visually and efficiently.
+    </p>
+  </div>
+  <div class="col-12 col-md-6 text-center py-2">
+    <svg width="90" height="50" viewBox="0 0 220 120" fill="none" xmlns="http://www.w3.org/2000/svg" class="dashboard-logo">
+      <ellipse cx="110" cy="60" rx="100" ry="50" fill="#a5b4fc"/>
+      <ellipse cx="110" cy="60" rx="70" ry="35" fill="#818cf8"/>
+      <circle cx="110" cy="60" r="25" fill="#6366f1"/>
+      <text x="110" y="65" text-anchor="middle" fill="#fff" font-size="18" font-family="Arial" font-weight="bold">CRM</text>
+    </svg>
   </div>
 </div>
 
 
 
 
-<!-- Recent Leads Section -->
-<section class="recent-section container mb-5 px-3 px-md-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="mb-0">Recent Leads</h2>
-    <a href="{% url 'lead:leads_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
-  </div>
-
-  {% if recent_leads %}
-  <div class="table-responsive rounded shadow-sm">
-    <table class="data-table table table-hover align-middle mb-0">
-      <thead class="table-dark">
-        <tr>
-          <th>Actions</th>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Number</th>
-          <th>Stage</th>
-          <th>Created By</th>
-          <th>Last Modified</th>
-          <th>Source</th>
-          <th>Budget</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in recent_leads %}
-        <tr>
-          <td>
-            {% if item.pk %}
-              <a href="{% url 'edit_leads' item.pk %}" class="btn btn-sm btn-warning me-1">
-                <i class="bi bi-pencil-fill"></i> Edit
-              </a>
-              <a href="{% url 'lead_details' item.pk %}" class="btn btn-sm btn-info">
-                <i class="bi bi-eye-fill"></i> View
-              </a>
-
-            {% else %}
-              <span class="text-muted">No ID</span>
-            {% endif %}
-          </td>
-          <td>{{ item.unique_id }}</td>
-          <td>{{ item.name }}</td>
-          <td>{{ item.phone|slice:":-3" }}***</td>
-          <td class="{% if item.get_lead_status_display == 'Prospect' %}
-                      status-prospect
-                    {% elif item.get_lead_status_display == 'High Prospect' %}
-                      status-high-prospect
-                    {% elif item.get_lead_status_display == 'Sold/On-board' %}
-                      status-sold
-                    {% endif %}">
-            {{ item.get_lead_status_display }}
-          </td>
-          <td>{{ item.created_by }}</td>
-          <td>{{ item.last_modified|date:"M d, H:i" }}</td>
-          <td>{{ item.leadsource }}</td>
-          <td>{{ item.budget|default:"-" }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% else %}
-  <div class="alert alert-info">No recent leads found.</div>
-  {% endif %}
-</section>
 
 
 
 
 
-<style>
-  /* Base Styles */
-  .dashboard-container {
-    background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
-  }
-  
-  /* Hero Section */
-  .hero-section {
-    background: #1b84ca;
-    min-height: 120px;
-  }
-  
-  .hero-title {
-    font-size: 1.7rem;
-    font-weight: 700;
-  }
-  
-  .hero-subtitle {
-    font-size: 1.1rem;
-  }
-  
-  .dashboard-logo {
-    max-width: 90px; 
-    max-height: 50px;
-  }
-  
-  /* Card Styles */
-  .stat-card {
-    transition: all 0.3s ease;
-    cursor: pointer;
-  }
-  
-  .stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-  }
-  
-  /* Status Colors */
-  .status-prospect {
-    background-color: #3b82f6;
-    color: white;
-  }
-  
-  .status-high-prospect {
-    background-color: #ef4444;
-    color: white;
-  }
-  
-  .status-sold {
-    background-color: #10b981;
-    color: white;
-  }
-  
-  /* Table Styles */
-  .data-table {
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  }
-  
-  .data-table th {
-    background-color: #1f2937;
-    color: white;
-    font-weight: 600;
-  }
-  
-  .data-table tr:hover {
-    background-color: #f9fafb;
-  }
-  
-  /* Star Icon */
-  .star-icon {
-    transition: all 0.2s ease;
-  }
-  
-  .star-icon:hover {
-    transform: scale(1.2);
-  }
-  
-  /* Responsive Adjustments */
-  @media (max-width: 768px) {
-    .hero-title {
-      font-size: 1.4rem;
-    }
-    
-    .hero-subtitle {
-      font-size: 1rem;
-    }
-    
-    .stat-card {
-      margin-bottom: 1rem;
-    }
-    
-    .recent-section {
-      padding-left: 1rem;
-      padding-right: 1rem;
-    }
-  }
-</style>
+  <!-- Stats Cards Section -->
+  <div class="stats-section container my-4">
+    <!-- Add Bootstrap CSS and Icons CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet"/>
 
-<script>
-  function toggleStar(pk) {
-    fetch(`/clients/${pk}/toggle-favorite/`, {
-      method: 'POST',
-      headers: {
-        'X-CSRFToken': '{{ csrf_token }}',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({}),
-    })
-    .then(response => response.json())
-    .then(data => {
-      const starIcon = document.querySelector(`button[onclick="toggleStar('${pk}')"] i`);
-      if (data.is_favorite) {
-        starIcon.classList.remove('bi-star');
-        starIcon.classList.add('bi-star-fill', 'text-warning');
-      } else {
-        starIcon.classList.remove('bi-star-fill', 'text-warning');
-        starIcon.classList.add('bi-star');
+    <style>
+      .stat-card {
+        position: relative;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        min-height: 120px;
       }
-    })
-    .catch(error => console.error('Error:', error));
-  }
-</script>
+      .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      }
+      .stat-icon {
+        font-size: 2rem;
+        margin-bottom: 5px;
+        opacity: 0.8;
+        transition: opacity 0.3s ease;
+      }
+      .stat-card:hover .stat-icon {
+        opacity: 1;
+      }
+      .floating-tooltip {
+        position: fixed;
+        pointer-events: none;
+        background: rgba(33, 37, 41, 0.9);
+        color: #fff;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.15s ease;
+        z-index: 1050;
+        transform: translate(-50%, -100%);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+      }
+      .floating-tooltip.show {
+        opacity: 1;
+      }
+    </style>
+
+    <div class="row mt-4 g-2">
+      <div class="col-12">
+        <div class="d-flex flex-row flex-wrap justify-content-center gap-2">
+          <a href="{% url 'lead:leads_list' %}" class="text-decoration-none flex-grow-1" style="min-width: 85px;" data-tooltip="Total number of active leads currently in the pipeline">
+            <div class="stat-card card text-center border-danger shadow-sm h-100">
+              <div class="card-body p-2 bg-danger text-white d-flex flex-column align-items-center justify-content-center">
+                <i class="bi bi-people-fill stat-icon"></i>
+                <h6 class="fw-bold mb-1" style="font-size: 0.85rem;">Total Active Leads</h6>
+                <h5 class="fw-bolder" style="font-size: 1.5rem;">{{total_leads}}</h5>
+              </div>
+            </div>
+          </a>
+          <a href="{% url 'high_priority_leads' %}" class="text-decoration-none flex-grow-1" style="min-width: 85px;" data-tooltip="Leads marked as high priority for immediate follow-up">
+            <div class="stat-card card text-center border-danger shadow-sm h-100">
+              <div class="card-body p-2 d-flex flex-column align-items-center justify-content-center">
+                <i class="bi bi-exclamation-triangle-fill text-danger stat-icon"></i>
+                <h6 class="text-danger fw-bold mb-1" style="font-size: 0.85rem;">High Priority</h6>
+                <h5 class="fw-bold" style="font-size: 1.5rem;">{{high_prospect_count}}</h5>
+              </div>
+            </div>
+          </a>
+          <a href="{% url 'prospect_leads' %}" class="text-decoration-none flex-grow-1" style="min-width: 85px;" data-tooltip="Potential leads interested and qualified as prospects">
+            <div class="stat-card card text-center border-primary shadow-sm h-100">
+              <div class="card-body p-2 d-flex flex-column align-items-center justify-content-center">
+                <i class="bi bi-lightbulb-fill text-primary stat-icon"></i>
+                <h6 class="text-primary fw-bold mb-1" style="font-size: 0.85rem;">Prospect</h6>
+                <h5 class="fw-bold" style="font-size: 1.5rem;">{{prospect_count}}</h5>
+              </div>
+            </div>
+          </a>
+          <a href="{% url 'junk_leads' %}" class="text-decoration-none flex-grow-1" style="min-width: 85px;" data-tooltip="Leads marked as junk and unlikely to convert">
+            <div class="stat-card card text-center border-secondary shadow-sm h-100">
+              <div class="card-body p-2 d-flex flex-column align-items-center justify-content-center">
+                <i class="bi bi-trash-fill text-secondary stat-icon"></i>
+                <h6 class="text-secondary fw-bold mb-1" style="font-size: 0.85rem;">Junk</h6>
+                <h5 class="fw-bold" style="font-size: 1.5rem;">{{junk_count}}</h5>
+              </div>
+            </div>
+          </a>
+          <a href="{% url 'lead_leads' %}" class="text-decoration-none flex-grow-1" style="min-width: 85px;" data-tooltip="Leads currently in the 'Lead' stage">
+            <div class="stat-card card text-center border-warning shadow-sm h-100">
+              <div class="card-body p-2 d-flex flex-column align-items-center justify-content-center">
+                <i class="bi bi-person-lines-fill text-warning stat-icon"></i>
+                <h6 class="text-warning fw-bold mb-1" style="font-size: 0.85rem;">Lead</h6>
+                <h5 class="fw-bold" style="font-size: 1.5rem;">{{lead_count}}</h5>
+              </div>
+            </div>
+          </a>
+          <a href="{% url 'lost_leads' %}" class="text-decoration-none flex-grow-1" style="min-width: 85px;" data-tooltip="Leads that were lost or unresponsive">
+            <div class="stat-card card text-center border-dark shadow-sm h-100">
+              <div class="card-body p-2 d-flex flex-column align-items-center justify-content-center">
+                <i class="bi bi-x-circle-fill text-dark stat-icon"></i>
+                <h6 class="text-dark fw-bold mb-1" style="font-size: 0.85rem;">Lost</h6>
+                <h5 class="fw-bold" style="font-size: 1.5rem;">{{lost_count}}</h5>
+              </div>
+            </div>
+          </a>
+          <a href="{% url 'hold_leads' %}" class="text-decoration-none flex-grow-1" style="min-width: 85px;" data-tooltip="Leads currently on hold or waiting for follow-up">
+            <div class="stat-card card text-center border-info shadow-sm h-100">
+              <div class="card-body p-2 d-flex flex-column align-items-center justify-content-center">
+                <i class="bi bi-pause-circle-fill text-info stat-icon"></i>
+                <h6 class="text-info fw-bold mb-1" style="font-size: 0.85rem;">Hold</h6>
+                <h5 class="fw-bold" style="font-size: 1.5rem;">{{hold_count}}</h5>
+              </div>
+            </div>
+          </a>
+          <a href="{% url 'sold_onboard_leads' %}" class="text-decoration-none flex-grow-1" style="min-width: 85px;" data-tooltip="Leads successfully converted and sold onboard">
+            <div class="stat-card card text-center border-success shadow-sm h-100">
+              <div class="card-body p-2 bg-success text-white d-flex flex-column align-items-center justify-content-center">
+                <i class="bi bi-check-circle-fill stat-icon"></i>
+                <h6 class="fw-bold mb-1" style="font-size: 0.85rem;">Sold</h6>
+                <h5 class="fw-bold" style="font-size: 1.5rem;">{{ sold_count }}</h5>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating Tooltip Element -->
+    <div id="floating-tooltip" class="floating-tooltip"></div>
+    <script>
+      const tooltip = document.getElementById('floating-tooltip');
+      document.querySelectorAll('.stat-card').forEach(card => {
+        card.addEventListener('mouseenter', () => {
+          const parentLink = card.closest('a');
+          if (!parentLink) return;
+          tooltip.textContent = parentLink.getAttribute('data-tooltip') || '';
+          tooltip.classList.add('show');
+        });
+        card.addEventListener('mouseleave', () => {
+          tooltip.classList.remove('show');
+        });
+        card.addEventListener('mousemove', (e) => {
+          const offsetX = 15;
+          const offsetY = 25;
+          tooltip.style.left = (e.clientX + offsetX) + 'px';
+          tooltip.style.top = (e.clientY - offsetY) + 'px';
+        });
+      });
+    </script>
+  </div>
+
+  <!-- Follow Up Cards Section -->
+  <style>
+    @keyframes popup {
+      0% { transform: scale(0.8); opacity: 0; }
+      50% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .card-text-pop {
+      display: inline-block;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      opacity: 0;
+      transform: scale(0.8);
+      pointer-events: none;
+    }
+    .card:hover .card-text-pop {
+      animation: popup 0.4s forwards;
+      opacity: 1;
+      pointer-events: auto;
+    }
+  </style>
+  <div class="container mt-3">
+    <div class="row g-2 align-items-start">
+      <div class="col-12 col-sm-6 col-md-3">
+        <a href="{% url 'scheduled_followups' %}" class="text-decoration-none">
+          <div class="card shadow-sm rounded text-center py-2 px-3 h-100">
+            <div class="h4 fw-bold text-success mb-1">{{ today_scheduled_count }}</div>
+            <div class="small fw-semibold text-success mb-1">Today's Task</div>
+            <div class="text-muted small card-text-pop">View scheduled follow-ups</div>
+          </div>
+        </a>
+      </div>
+      <div class="col-12 col-sm-6 col-md-3">
+        <a href="{% url 'upcoming_followup' %}" class="text-decoration-none">
+          <div class="card shadow-sm rounded text-center py-2 px-3 h-100">
+            <div class="h4 fw-bold text-secondary mb-1">{{ upcoming_count }}</div>
+            <div class="small fw-semibold text-secondary mb-1">Upcoming Follow Up</div>
+            <div class="text-muted small card-text-pop">Upcoming follow-up tasks</div>
+          </div>
+        </a>
+      </div>
+      <div class="col-12 col-sm-6 col-md-3">
+        <a href="{% url 'missed_followups' %}" class="text-decoration-none">
+          <div class="card shadow-sm rounded text-center py-2 px-3 h-100">
+            <div class="h4 fw-bold text-danger mb-1">{{ missed_followup_count }}</div>
+            <div class="small fw-semibold text-danger mb-1">Missed Follow Up</div>
+            <div class="text-muted small card-text-pop">Check missed follow-ups</div>
+          </div>
+        </a>
+      </div>
+      <div class="col-12 col-sm-6 col-md-3">
+        <a href="{% url 'followup_today' %}" class="text-decoration-none">
+          <div class="card shadow-sm rounded text-center py-2 px-3 h-100">
+            <div class="h4 fw-bold text-primary mb-1">{{ followup_today_count }}</div>
+            <div class="small fw-semibold text-primary mb-1">Follow Up Done Today</div>
+            <div class="text-muted small card-text-pop">Export completed follow-ups</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Leads Section -->
+  <section class="recent-section container mb-5 px-3 px-md-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="mb-0">Recent Leads</h2>
+      <a href="{% url 'lead:leads_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+    </div>
+    {% if recent_leads %}
+    <div class="table-responsive rounded shadow-sm">
+      <table class="data-table table table-hover align-middle mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th>Actions</th>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Number</th>
+            <th>Stage</th>
+            <th>Created By</th>
+            <th>Last Modified</th>
+            <th>Source</th>
+            <th>Budget</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in recent_leads %}
+          <tr>
+            <td>
+              {% if item.pk %}
+                <a href="{% url 'edit_leads' item.pk %}" class="btn btn-sm btn-warning me-1">
+                  <i class="bi bi-pencil-fill"></i> Edit
+                </a>
+                <a href="{% url 'lead_details' item.pk %}" class="btn btn-sm btn-info">
+                  <i class="bi bi-eye-fill"></i> View
+                </a>
+              {% else %}
+                <span class="text-muted">No ID</span>
+              {% endif %}
+            </td>
+            <td>{{ item.unique_id }}</td>
+            <td>{{ item.name }}</td>
+            <td>{{ item.phone|slice:":-3" }}***</td>
+            <td class="{% if item.get_lead_status_display == 'Prospect' %}
+                        status-prospect
+                      {% elif item.get_lead_status_display == 'High Prospect' %}
+                        status-high-prospect
+                      {% elif item.get_lead_status_display == 'Sold/On-board' %}
+                        status-sold
+                      {% endif %}">
+              {{ item.get_lead_status_display }}
+            </td>
+            <td>{{ item.created_by }}</td>
+            <td>{{ item.last_modified|date:"M d, H:i" }}</td>
+            <td>{{ item.leadsource }}</td>
+            <td>{{ item.budget|default:"-" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">No recent leads found.</div>
+    {% endif %}
+  </section>
+
+  <!-- Dashboard Styles -->
+  <style>
+    .dashboard-container {
+      background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+    }
+    .hero-section {
+      background: #1b84ca;
+      min-height: 120px;
+      margin-bottom: 2rem;
+    }
+    .hero-title {
+      font-size: 1.7rem;
+      font-weight: 700;
+    }
+    .hero-subtitle {
+      font-size: 1.1rem;
+    }
+    .dashboard-logo {
+      max-width: 90px; 
+      max-height: 50px;
+    }
+    .status-prospect {
+      background-color: #3b82f6;
+      color: white;
+    }
+    .status-high-prospect {
+      background-color: #ef4444;
+      color: white;
+    }
+    .status-sold {
+      background-color: #10b981;
+      color: white;
+    }
+    .data-table {
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .data-table th {
+      background-color: #1f2937;
+      color: white;
+      font-weight: 600;
+    }
+    .data-table tr:hover {
+      background-color: #f9fafb;
+    }
+    .star-icon {
+      transition: all 0.2s ease;
+    }
+    .star-icon:hover {
+      transform: scale(1.2);
+    }
+    @media (max-width: 768px) {
+      .hero-title {
+        font-size: 1.4rem;
+      }
+      .hero-subtitle {
+        font-size: 1rem;
+      }
+      .stat-card {
+        margin-bottom: 1rem;
+      }
+      .recent-section {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+    }
+  </style>
+
+  <!-- Star Toggle Script -->
+  <script>
+    function toggleStar(pk) {
+      fetch(`/clients/${pk}/toggle-favorite/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
+      })
+      .then(response => response.json())
+      .then(data => {
+        const starIcon = document.querySelector(`button[onclick="toggleStar('${pk}')"] i`);
+        if (data.is_favorite) {
+          starIcon.classList.remove('bi-star');
+          starIcon.classList.add('bi-star-fill', 'text-warning');
+        } else {
+          starIcon.classList.remove('bi-star-fill', 'text-warning');
+          starIcon.classList.add('bi-star');
+        }
+      })
+      .catch(error => console.error('Error:', error));
+    }
+  </script>
+</div>
 {% endblock %}
