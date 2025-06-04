@@ -8,7 +8,6 @@ urlpatterns=[
     path('leads_list', views.leads_list, name="leads_list"),
     path('<int:pk>/delete',views.leads_delete,name="lead_delete"),
     path("<int:pk>/convert", views.convert_to_client, name="lead_convert"),
-    path('lead/<int:pk>/', views.lead_details, name='lead_details'),
     #path('lead/<int:pk>/update/', views.update_followup, name='update_followup'),
     path('lead/<int:pk>/history/', views.lead_followup_and_history, name='lead_change_history'),
 

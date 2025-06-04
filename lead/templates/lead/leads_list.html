@@ -43,51 +43,56 @@
         <table class="table table-hover mb-0" id="leadTable">
             <thead class="table-light">
                 <tr>
-                    <th class="align-middle">ID
+                    <th class="align-middle">SL No.
                         <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(1, this.value)" placeholder="Filter...">
                     </th>
-                    <th class="align-middle">Name
+                    <th class="align-middle">ID
                         <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(2, this.value)" placeholder="Filter...">
                     </th>
-                    <th class="align-middle">Number
+                    <th class="align-middle">Name
                         <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(3, this.value)" placeholder="Filter...">
                     </th>
-                    <th class="align-middle">Created By
+                    <th class="align-middle">Number
                         <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(4, this.value)" placeholder="Filter...">
                     </th>
-                    <th class="align-middle">Created Date
+                    <th class="align-middle">Created By
                         <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(5, this.value)" placeholder="Filter...">
                     </th>
-                    <th class="align-middle">Team Leader
+                    <th class="align-middle">Created Date
                         <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(6, this.value)" placeholder="Filter...">
                     </th>
-                    <th class="align-middle">Lead Source
+                    <th class="align-middle">Team Leader
                         <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(7, this.value)" placeholder="Filter...">
                     </th>
-                    <th class="align-middle">Sub Source
+                    <th class="align-middle">Lead Source
                         <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(8, this.value)" placeholder="Filter...">
                     </th>
-                    <th class="align-middle">Budget
+                    <th class="align-middle">Sub Source
                         <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(9, this.value)" placeholder="Filter...">
                     </th>
-                    <th class="align-middle">Stage
+                    <th class="align-middle">Budget
                         <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(10, this.value)" placeholder="Filter...">
                     </th>
-                    <th class="align-middle">Email
+                    <th class="align-middle">Stage
                         <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(11, this.value)" placeholder="Filter...">
                     </th>
-                    <th class="align-middle">Next Follow-Up
+                    <th class="align-middle">Email
                         <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(12, this.value)" placeholder="Filter...">
+                    </th>
+                    <th class="align-middle">Next Follow-Up
+                        <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(13, this.value)" placeholder="Filter...">
                     </th>
                 </tr>
             </thead>
             <tbody>
                 {% for lead in leads %}
                 <tr class="align-middle">
+                    <td>{{ forloop.counter }}</td>
                     <td>{{ lead.unique_id }}</td>
                     <td>
-                        <a href="{% url 'lead:lead_change_history' lead.id %}" class="text-decoration-none">
-                            {{ lead.name }}
+                        {{ lead.name }}
+                        <a href="{% url 'lead:lead_change_history' lead.id %}" class="btn btn-sm btn-outline-primary mt-1" title="Update lead">
+                            <i class="bi bi-chat-dots"></i>
                         </a>
                     </td>
                     <td>{{ lead.phone|default:"-" }}</td>
@@ -120,6 +125,72 @@
     {% endif %}
 </div>
 
+<style>
+    .lead-list-container {
+        background-color: #f8f9fa;
+        min-height: calc(100vh - 56px);
+    }
+    
+    .table thead th {
+        position: sticky;
+        top: 0;
+        background-color: #f8f9fa;
+        z-index: 10;
+    }
+    
+    .lead-status-prospect {
+        background-color: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+        font-weight: 500;
+    }
+    
+    .lead-status-high prospect {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+        font-weight: 500;
+    }
+    
+    .lead-status-sold/on-board {
+        background-color: rgba(25, 135, 84, 0.1);
+        color: #198754;
+        font-weight: 500;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+    
+    @media (max-width: 992px) {
+        .table-responsive {
+            border: 0;
+        }
+        
+        .table thead {
+            display: none;
+        }
+        
+        .table tr {
+            display: block;
+            margin-bottom: 1rem;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+        }
+        
+        .table td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .table td::before {
+            content: attr(data-label);
+            font-weight: bold;
+            margin-right: 1rem;
+        }
+    }
+</style>
 
 <script>
     // Initialize data labels for mobile view

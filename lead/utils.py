@@ -29,6 +29,30 @@ from django.utils.timezone import now
 from lead.models import Lead
 from dashboard.models import FollowUp
 
+
+
+
+def get_scheduled_followup_count(user):
+    today = now().date()
+    if user.is_superuser:
+        return Lead.objects.filter(next_followup_date=today).count()
+    else:
+        return Lead.objects.filter(next_followup_date=today, created_by=user).count()
+
+
+
+def get_missed_followup_count(user):
+    today = now().date()
+    if user is None:
+        return 0
+    if user.is_superuser:
+        # All leads with next_followup_date before today
+        return Lead.objects.filter(next_followup_date__lt=today).count()
+    else:
+        # Only leads created by this user with next_followup_date before today
+        return Lead.objects.filter(next_followup_date__lt=today, created_by=user).count()
+
+
 def get_followup_today_count(user):
     today = now().date()
 

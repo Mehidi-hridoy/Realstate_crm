@@ -1,0 +1,58 @@
+{% extends "crm/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+  <h3 class="mb-4">{{ page_title }}</h3>
+
+  {% if leads_data %}
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered align-middle">
+        <thead class="table-primary text-white">
+          <tr>
+            <th>#</th>
+            <th>Lead Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Next Follow-up Date</th>
+            <th>Lead Status</th>
+            <th>Assigned To</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in leads_data %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ item.lead.name }}</td>
+            <td>{{ item.lead.primaryemail|default:"N/A" }}</td>
+            <td>{{ item.lead.phone|default:"N/A" }}</td>
+            <td>{{ item.next_followup_date|date:"M d, Y" }}</td>
+            <td>{{ item.lead.lead_status|default:"N/A" }}</td>
+            <td>
+              {% if item.lead.assigned_to %}
+                {{ item.lead.assigned_to.get_full_name|default:item.lead.assigned_to.username }}
+              {% else %}
+                Not Assigned
+              {% endif %}
+            </td>
+     <td>
+  {% if item.lead.id %}
+    <a href="{% url 'lead:lead_change_history' item.lead.id %}" class="btn btn-outline-primary btn-sm">Update</a>
+    <a href="{% url 'edit_leads' item.lead.id %}?redirect_to=upcoming_followup" class="btn btn-outline-secondary btn-sm">Edit</a>
+
+
+  {% else %}
+    <span class="text-muted">Invalid Lead</span>
+  {% endif %}
+</td>
+
+
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="alert alert-info">No upcoming follow-ups found.</div>
+  {% endif %}
+</div>
+{% endblock %}

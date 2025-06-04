@@ -2,38 +2,63 @@
 
 {% block content %}
 <div class="container mt-4">
-  <h2 class="text-primary mb-4">Lead Details</h2>
+  <h2 class="text-primary mb-4">🧭 Lead Overview</h2>
 
   <!-- Lead Info Card -->
-  <div class="card mb-4 shadow-sm">
+  <div class="card shadow-sm mb-4">
     <div class="card-body">
-      <h4 class="card-title">{{ lead.name }}</h4>
-      <p><strong>Status:</strong> {{ lead.lead_status }}</p>
-      <p><strong>Description:</strong> {{ lead.description|default:"—" }}</p>
-      <p><strong>Next Follow-Up Date:</strong> {{ lead.next_followup_date|date:"F j, Y" }}</p>
-      <p><strong>Created At:</strong> {{ lead.created_at|date:"F j, Y, g:i A" }}</p>
-      <p><strong>Last Modified:</strong> {{ lead.modified_at|date:"F j, Y, g:i A" }}</p>
+      <div class="row g-4">
+        <div class="col-md-6">
+          <h4 class="card-title mb-2 text-dark">{{ lead.name }}</h4>
+          <p><strong>Status:</strong>
+            <span class="badge
+              {% if lead.lead_status == 'Prospect' %}
+                bg-secondary
+              {% elif lead.lead_status == 'High Prospect' %}
+                bg-primary
+              {% elif lead.lead_status == 'Sold/On-board' %}
+                bg-success
+              {% else %}
+                bg-dark
+              {% endif %}">
+              {{ lead.lead_status }}
+            </span>
+          </p>
+          <p><strong>Source:</strong> {{ lead.leadsource|default:"—" }}</p>
+          <p><strong>Budget:</strong> {{ lead.budget|default:"—" }}</p>
+          <p><strong>Phone:</strong> {{ lead.phone|default:"—" }}</p>
+          <p><strong>Email:</strong> {{ lead.email|default:"—" }}</p>
+        </div>
+        <div class="col-md-6">
+          <p><strong>Next Follow-Up:</strong> {{ lead.next_followup_date|date:"F j, Y" }}</p>
+          <p><strong>Created On:</strong> {{ lead.created_at|date:"F j, Y, g:i A" }}</p>
+          <p><strong>Last Updated:</strong> {{ lead.modified_at|date:"F j, Y, g:i A" }}</p>
+          <p><strong>Created By:</strong> {{ lead.created_by }}</p>
+          <p><strong>Assigned To:</strong> {{ lead.assigned_to|default:"—" }}</p>
+        </div>
+      </div>
 
-      <a href="{% url 'lead:update_followup' pk=lead.unique_id %}" class="btn btn-warning mt-3">
-        ✏️ Update Follow-Up
-      </a>
+      {% if lead.description %}
+      <div class="mt-4">
+        <h5 class="text-secondary">📝 Description</h5>
+        <p class="text-muted">{{ lead.description }}</p>
+      </div>
+      {% endif %}
+
+      <div class="mt-4">
+        <a href="{% url 'lead:lead_change_history' lead.id %}" class="btn btn-warning">
+          ✏️ Update Follow-Up
+        </a>
+        <a href="{% url 'lead:leads_list' %}" class="btn btn-outline-secondary ms-2">🔙 Back to Leads</a>
+      </div>
     </div>
   </div>
 
-  <!-- Lead Change Logs -->
-  {% if lead.leadchangelog_set.exists %}
-    <h5 class="text-secondary mb-3">Change History</h5>
-    <ul class="list-group">
-      {% for log in lead.leadchangelog_set.all|dictsortreversed:"timestamp" %}
-        <li class="list-group-item">
-          <small class="text-muted">{{ log.timestamp|date:"M d, Y H:i" }} by {{ log.changed_by }}</small><br>
-          <strong>{{ log.field_name|capfirst }}</strong> changed from
-          <em>"{{ log.old_value }}"</em> to <em>"{{ log.new_value }}"</em>
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p class="text-muted">No changes have been logged yet.</p>
-  {% endif %}
+  <!-- Change Logs Section -->
+  
+
+
+
+
 </div>
 {% endblock %}

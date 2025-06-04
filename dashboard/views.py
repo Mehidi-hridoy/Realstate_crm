@@ -14,11 +14,11 @@ from dashboard.models import FollowUp
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.db.models import Q, F
-from lead.utils import get_followup_today_count  # adjust import path as needed
-
+from lead.utils import get_followup_today_count,get_missed_followup_count, get_scheduled_followup_count # adjust import path as needed
 
 @login_required
 def dashboard(request):
+    # Superusers see all leads and clients; others see only their own team's
     if request.user.is_superuser:
         lead_filter = {}
         client_filter = {}
@@ -26,7 +26,8 @@ def dashboard(request):
         team = Team.objects.filter(created_by=request.user).first()
         lead_filter = {'team': team, 'created_by': request.user}
         client_filter = {'team': team, 'created_by': request.user}
-
+        
+    # Lead status counts for dashboard metrics
     total_leads = Lead.objects.filter(**lead_filter).count()
     sold_count = Lead.objects.filter(**lead_filter, lead_status='sold_onboard').count()
     hold_count = Lead.objects.filter(**lead_filter, lead_status='hold').count()
@@ -36,23 +37,51 @@ def dashboard(request):
     high_prospect_count = Lead.objects.filter(**lead_filter, lead_status='high_prospect').count()
     lost_count = Lead.objects.filter(**lead_filter, lead_status='lost').count()
 
+    # Count of leads grouped by their current status
     leads_by_status = (
         Lead.objects.filter(**lead_filter)
         .values('lead_status')
         .annotate(count=Count('id'))
     )
 
+    # Show most recent leads and clients
     recent_leads = Lead.objects.filter(**lead_filter).order_by("-created_at")[:5]
     recent_clients = Client.objects.filter(**client_filter).order_by("-created_at")[:5]
 
+    # Count of today's follow-ups (custom logic based on user access)
     if request.user.is_superuser:
-        followup_today_count = get_followup_today_count(None)  # Adjust inside function to handle None
+        followup_today_count = get_followup_today_count(None)  # Handle all users in function
     else:
         followup_today_count = get_followup_today_count(request.user)
+    today = now().date()
+    today_scheduled_count = get_scheduled_followup_count(request.user)
 
+
+
+    # Count of upcoming follow-ups after today
+    if request.user.is_superuser:
+        upcoming_count = Lead.objects.filter(next_followup_date__gt=today).count()
+    else:
+        upcoming_count = Lead.objects.filter(next_followup_date__gt=today, created_by=request.user).count()
+
+
+
+    # Count of follow-ups that were missed (scheduled before today)
+    if request.user.is_superuser:
+        missed_followup_count = get_missed_followup_count(request.user)
+    else:
+        missed_followup_count = get_missed_followup_count(request.user)
+
+
+
+    # Passing all metrics and data to the dashboard template
     context = {
         'total_leads': total_leads,
         'followup_today_count': followup_today_count,
+        'missed_followup_count': missed_followup_count,
+        'today_scheduled_count': today_scheduled_count,
+        'today': today,
+        'upcoming_count': upcoming_count,
         'sold_count': sold_count,
         'lead_count': lead_count,
         'hold_count': hold_count,
@@ -69,19 +98,41 @@ def dashboard(request):
 
 
 @login_required
-def add_followup(request, lead_id):
-    lead = get_object_or_404(Lead, id=lead_id)
+def lead_details(request, pk):
+    if request.user.is_superuser:
+        # Superuser can view any lead
+        lead = get_object_or_404(Lead, pk=pk)
+    else:
+        team = Team.objects.filter(created_by=request.user).first()
+        lead = get_object_or_404(
+            Lead,
+            pk=pk,
+            team=team,
+            created_by=request.user  # Ensures normal users only access their own leads
+        )
 
-    # You can customize how notes or followup date come in from a form:
-    notes = request.POST.get('notes', '')
+    # Optional: Group follow-ups by date
+    followup_summary = Lead.objects.filter(
+        next_followup_date__isnull=False
+    ).values('next_followup_date').annotate(
+        lead_count=Count('id')
+    ).order_by('next_followup_date')
 
-    FollowUp.objects.create(
-        lead=lead,
-        user=request.user,
-        followup_date=now().date(),
-        notes=notes,
-    )
-    return redirect('dashboard')  # or redirect to a lead detail page
+    if request.method == 'POST':
+        form = AddLeadForm(request.POST, instance=lead)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Lead updated successfully.')
+            return redirect('lead:leads_list')
+    else:
+        form = AddLeadForm(instance=lead)
+
+    context = {
+        'lead': lead,
+        'form': form,
+        'followup_summary': followup_summary,
+    }
+    return render(request, 'dashboard/leads_details.html', context)
 
 
 
@@ -127,31 +178,87 @@ def followup_today(request):
 
 
 
+@login_required
+def missed_followups(request):
+    today = now().date()
 
+    if request.user.is_superuser:
+        missed_leads = Lead.objects.filter(next_followup_date__lt=today)
+    else:
+        missed_leads = Lead.objects.filter(next_followup_date__lt=today, created_by=request.user)
+
+    missed_followup_count = get_missed_followup_count(request.user)
+
+    context = {
+        'page_title': 'Missed Follow-ups',
+        'leads_data': missed_leads,
+        'missed_followup_count': missed_followup_count,
+        'today': today,
+    }
+    return render(request, 'dashboard/missed_followups.html', context)
 
 
 
 @login_required
-def followup_next(request):
-    today = timezone.now().date()
-    next_followups = FollowUp.objects.filter(
-    user=request.user,
-    followup_date__gt=today
-    ).order_by('followup_date').select_related('lead')
+def scheduled_followup_today(request):
+    today = now().date()
 
+    if request.user.is_superuser:
+        leads = Lead.objects.filter(next_followup_date=today)
+    else:
+        leads = Lead.objects.filter(next_followup_date=today, created_by=request.user)
+
+    today_scheduled_count = get_scheduled_followup_count(request.user)
+
+    return render(request, 'dashboard/scheduled_followup_today.html', {
+        'leads': leads,
+        'today': today,
+        'today_scheduled_count': today_scheduled_count,
+    })
+
+
+
+@login_required
+def upcoming_followup(request):
+    today = now().date()
+
+    if request.user.is_superuser:
+        # Superuser sees all leads with upcoming follow-ups
+        upcoming_leads = Lead.objects.filter(next_followup_date__gt=today)
+    else:
+        # Regular users see only their own leads with upcoming follow-ups
+        upcoming_leads = Lead.objects.filter(
+            next_followup_date__gt=today,
+            created_by=request.user
+        )
+
+    upcoming_count = upcoming_leads.count()
+
+    # Prepare data for display if needed
+    leads_data = []
+    for lead in upcoming_leads:
+        leads_data.append({
+            'lead': lead,
+            'next_followup_date': lead.next_followup_date,
+        })
 
     context = {
-        'next_followups': next_followups,
-        'page_title': "Next Follow-ups",
+        'leads_data': leads_data,
+        'upcoming_count': upcoming_count,
+        'page_title': "Upcoming Follow-ups",
     }
-    return render(request, 'dashboard/followup_next.html', context)
+    return render(request, 'dashboard/upcoming_followup.html', context)
+
+
+
+
 
 
 @login_required
 def edit_leads(request, pk):
     lead = get_object_or_404(Lead, pk=pk)
 
-    # Determine redirect target (from POST on save, or GET when loading form)
+    # Determine where to go after saving: passed in query or post
     redirect_to = request.POST.get('redirect_to') if request.method == "POST" else request.GET.get('redirect_to', 'lead_leads')
 
     if request.method == "POST":
@@ -160,26 +267,26 @@ def edit_leads(request, pk):
             form.save()
             messages.success(request, "The changes were saved successfully.")
 
-            # Redirect based on lead type
-            if redirect_to in [
-                'prospect_leads', 'junk_leads', 'high_priority_leads',
-                'lost_leads', 'sold_onboard_leads', 'hold_leads', 'lead_leads'
-            ]:
+            # If it's a URL path (starts with slash), treat as a direct redirect
+            if redirect_to.startswith('/'):
                 return redirect(redirect_to)
             else:
-                return redirect('lead_leads')  # default fallback
+                # Assume it's a Django view name
+                return redirect(redirect_to)
         else:
             messages.error(request, "Please correct the error(s) below.")
     else:
         form = AddLeadForm(instance=lead)
-
     context = {
         "form": form,
         "lead": lead,
-        "redirect_to": redirect_to,  # Pass to template
+        "redirect_to": redirect_to,
     }
 
     return render(request, "dashboard/edit_lead.html", context)
+
+
+
 
 
 @login_required

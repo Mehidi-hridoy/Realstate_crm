@@ -11,14 +11,32 @@
           <h4 class="mb-0">Edit Lead Details</h4>
         </div>
         <div class="card-body">
-       <form method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <input type="hidden" name="redirect_to" value="{{ redirect_to }}">
-    <button type="submit">Save</button>
-</form>
+          <form method="POST">
+            {% csrf_token %}
+            <table class="table table-bordered table-striped align-middle">
+              {% for field in form %}
+              <tr>
+                <th class="bg-light">{{ field.label_tag }}</th>
+                <td>
+                  {{ field }}
+                  {% if field.help_text %}
+                  <small class="form-text text-muted">{{ field.help_text }}</small>
+                  {% endif %}
+                  {% if field.errors %}
+                  <div class="text-danger small">
+                    {{ field.errors|striptags }}
+                  </div>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </table>
+           <input type="hidden" name="redirect_to" value="{{ redirect_to }}">
 
-
+            <div class="text-end">
+              <button type="submit" class="btn btn-success">💾 Save Changes</button>
+            </div>
+          </form>
         </div>
       </div>
     </div>

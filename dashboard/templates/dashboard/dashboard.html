@@ -118,21 +118,21 @@
   <div class="row g-3 align-items-start">
     <!-- Today's Follow Up -->
     <div class="col-12 col-md-3">
-      <a href="#" class="text-decoration-none">
+      <a href="{% url 'scheduled_followups' %}" class="text-decoration-none">
         <div class="card shadow-sm rounded text-center p-3 h-100">
-          <div class="h2 fw-bold text-success">--</div>
-          <div class="small fw-semibold text-success">Follow Up Done</div>
-          <div class="text-muted small">Export completed follow-ups</div>
+          <div class="h2 fw-bold text-success">{{ today_scheduled_count   }}</div>
+          <div class="small fw-semibold text-success">Todays Follow Up</div>
+          <div class="text-muted small">View scheduled follow-ups</div>
         </div>
       </a>
     </div>
         
     <!-- Next Follow Up -->
     <div class="col-12 col-md-3">
-      <a href="#" class="text-decoration-none">
+      <a href="{% url 'upcoming_followup' %}"" class="text-decoration-none">
         <div class="card shadow-sm rounded text-center p-3 h-100">
-          <div class="h2 fw-bold text-secondary">--</div>
-          <div class="small fw-semibold text-secondary">Next Follow Up</div>
+          <div class="h2 fw-bold text-secondary">{{upcoming_count}}</div>
+          <div class="small fw-semibold text-secondary">Upcoming Follow Up</div>
           <div class="text-muted small">Upcoming follow-up tasks</div>
         </div>
       </a>
@@ -140,9 +140,9 @@
 
     <!-- Missed Follow Up -->
     <div class="col-12 col-md-3">
-      <a href="#" class="text-decoration-none">
+      <a href="{% url 'missed_followups' %}" class="text-decoration-none">
         <div class="card shadow-sm rounded text-center p-3 h-100">
-          <div class="h2 fw-bold text-danger">--</div>
+          <div class="h2 fw-bold text-danger">{{ missed_followup_count }}</div>
           <div class="small fw-semibold text-danger">Missed Follow Up</div>
           <div class="text-muted small">Check missed follow-ups</div>
         </div>
@@ -154,8 +154,8 @@
       <a href="{% url 'followup_today' %}" class="text-decoration-none">
         <div class="card shadow-sm rounded text-center p-3 h-100">
           <div class="h2 fw-bold text-primary">{{ followup_today_count }}</div>
-          <div class="small fw-semibold text-primary">Today's Follow Up</div>
-          <div class="text-muted small">View scheduled follow-ups</div>
+          <div class="small fw-semibold text-primary">Follow Up Done Today</div>
+          <div class="text-muted small">Export completed follow-ups</div>
         </div>
       </a>
     </div>
@@ -165,111 +165,74 @@
 
 
 
+<!-- Recent Leads Section -->
+<section class="recent-section container mb-5 px-3 px-md-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Recent Leads</h2>
+    <a href="{% url 'lead:leads_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+  </div>
 
-
-  <!-- Recent Leads Section -->
-  <section class="recent-section container mb-5 px-3 px-md-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2 class="mb-0">Recent Leads</h2>
-      <a href="{% url 'lead:leads_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
-    </div>
-    
-    {% if recent_leads %}
-    <div class="table-responsive rounded shadow-sm">
-      <table class="data-table table table-hover align-middle mb-0">
-        <thead class="table-dark">
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Number</th>
-            <th>Stage</th>
-            <th>Created By</th>
-            <th>Last Modified</th>
-            <th>Source</th>
-            <th>Budget</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for item in recent_leads %}
-          <tr>
-            <td>{{ item.unique_id }}</td>
-            <td>{{ item.name }}</td>
-            <td>{{ item.phone|slice:":-3" }}***</td>
-            <td class="
-              {% if item.get_lead_status_display == 'Prospect' %}
-                status-prospect
-              {% elif item.get_lead_status_display == 'High Prospect' %}
-                status-high-prospect
-              {% elif item.get_lead_status_display == 'Sold/On-board' %}
-                status-sold
-              {% endif %}">
-              {{ item.get_lead_status_display }}
-            </td>
-            <td>{{ item.created_by }}</td>
-            <td>{{ item.last_modified|date:"M d, H:i" }}</td>
-            <td>{{ item.leadsource }}</td>
-            <td>{{ item.budget|default:"-" }}</td>
-            <td>
-              <a href="{% url 'lead:lead_details' item.pk %}" class="btn btn-sm btn-info">
+  {% if recent_leads %}
+  <div class="table-responsive rounded shadow-sm">
+    <table class="data-table table table-hover align-middle mb-0">
+      <thead class="table-dark">
+        <tr>
+          <th>Actions</th>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Number</th>
+          <th>Stage</th>
+          <th>Created By</th>
+          <th>Last Modified</th>
+          <th>Source</th>
+          <th>Budget</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in recent_leads %}
+        <tr>
+          <td>
+            {% if item.pk %}
+              <a href="{% url 'edit_leads' item.pk %}" class="btn btn-sm btn-warning me-1">
+                <i class="bi bi-pencil-fill"></i> Edit
+              </a>
+              <a href="{% url 'lead_details' item.pk %}" class="btn btn-sm btn-info">
                 <i class="bi bi-eye-fill"></i> View
               </a>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% else %}
-    <div class="alert alert-info">No recent leads found.</div>
-    {% endif %}
-  </section>
 
-  <!-- Recent Clients Section -->
-  <section class="recent-section container px-3 px-md-4 mb-5">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2 class="mb-0">Recent Clients</h2>
-      <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
-    </div>
-    
-    {% if recent_clients %}
-    <div class="table-responsive rounded shadow-sm">
-      <table class="data-table table table-hover align-middle mb-0">
-        <thead class="table-dark">
-          <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th class="text-center">Favorite</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for client in recent_clients %}
-          <tr>
-            <td>{{ client.name }}</td>
-            <td>
-              {{ client.get_description_display|default:client.description|truncatechars:50 }}
-            </td>
-            <td class="text-center">
-              <button class="btn btn-link p-0 star-icon" aria-label="Toggle Favorite" onclick="toggleStar('{{ client.pk }}')">
-                <i class="bi bi-star{% if client.is_favorite %}-fill text-warning{% endif %}"></i>
-              </button>
-            </td>
-            <td>
-              <a href="{% url 'clients_detail' client.pk %}" class="btn btn-sm btn-info">
-                <i class="bi bi-eye-fill"></i> View
-              </a>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% else %}
-    <div class="alert alert-info">No recent clients found.</div>
-    {% endif %}
-  </section>
-</div>
+            {% else %}
+              <span class="text-muted">No ID</span>
+            {% endif %}
+          </td>
+          <td>{{ item.unique_id }}</td>
+          <td>{{ item.name }}</td>
+          <td>{{ item.phone|slice:":-3" }}***</td>
+          <td class="{% if item.get_lead_status_display == 'Prospect' %}
+                      status-prospect
+                    {% elif item.get_lead_status_display == 'High Prospect' %}
+                      status-high-prospect
+                    {% elif item.get_lead_status_display == 'Sold/On-board' %}
+                      status-sold
+                    {% endif %}">
+            {{ item.get_lead_status_display }}
+          </td>
+          <td>{{ item.created_by }}</td>
+          <td>{{ item.last_modified|date:"M d, H:i" }}</td>
+          <td>{{ item.leadsource }}</td>
+          <td>{{ item.budget|default:"-" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="alert alert-info">No recent leads found.</div>
+  {% endif %}
+</section>
+
+
+
+
 
 <style>
   /* Base Styles */

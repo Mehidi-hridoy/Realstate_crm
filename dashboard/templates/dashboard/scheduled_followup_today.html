@@ -1,0 +1,85 @@
+{% extends "crm/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+  <h3 class="mb-4">Today's Scheduled Follow-Ups</h3>
+
+  <!-- Summary Card -->
+  <div class="card shadow-sm rounded p-3 mb-4 bg-light">
+    <div class="d-flex justify-content-between align-items-center">
+      <h5 class="mb-0 text-primary">Total Follow-Ups Today: {{ leads|length }}</h5>
+      <h5 class="mb-0 text-secondary">Date: {{ today|date:"M d, Y" }}</h5>
+    </div>
+  </div>
+
+  {% if leads %}
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Mobile</th>
+            <th>Status</th>
+            <th>Next Follow-Up</th>
+            <th>Assigned To</th>
+            <th>Description</th>
+            <th>Created By</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for lead in leads %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ lead.name }}</td>
+            <td>{{ lead.phone|default:"N/A" }}</td>
+            <td>{{ lead.lead_status|default:"N/A" }}</td>
+            <td>{{ lead.next_followup_date|date:"M d, Y" }}</td>
+            <td>
+              {% if lead.assigned_to %}
+                {{ lead.assigned_to.get_full_name|default:lead.assigned_to.username }}
+              {% else %}
+                Not Assigned
+              {% endif %}
+            </td>
+            <td>{{ lead.description|default:"-" }}</td>
+            <td>{{ lead.created_by.username|default:"Unknown" }}</td>
+          
+          
+<td>
+  {% if lead.id %}
+    <a href="{% url 'lead:lead_change_history' lead.id %}?redirect_to={{ request.path|urlencode }}" 
+       class="btn btn-outline-primary btn-sm mb-1">
+      Update
+    </a>
+    <a href="{% url 'edit_leads' lead.id %}?redirect_to=scheduled_followups" 
+       class="btn btn-outline-secondary btn-sm mb-1">
+      Edit
+    </a>
+  {% else %}
+    <span class="text-muted">Invalid Lead</span>
+  {% endif %}
+</td>
+
+
+
+
+
+
+
+
+
+
+
+
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="alert alert-info">No scheduled follow-ups for today.</div>
+  {% endif %}
+</div>
+{% endblock %}

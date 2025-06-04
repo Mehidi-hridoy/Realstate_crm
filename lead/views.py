@@ -12,6 +12,7 @@ from datetime import datetime,date
 from django.utils.timezone import now
 from collections import defaultdict
 from django.utils.timezone import localtime
+from django.urls import reverse
 
 
 
@@ -74,7 +75,7 @@ def leads_delete(request, pk):
     lead.delete()
     messages.success(request, 'The lead was deleted.')
 
-    return redirect('leads_list')
+    return redirect('lead:leads_list')
 
 
 
@@ -100,18 +101,31 @@ def convert_to_client(request, pk):
     return redirect('leads_list')
 
 
-
-
-
-
-
-
-
-
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.utils.timezone import now, localtime
+from django.contrib import messages
+from django.utils.http import urlencode
+from collections import defaultdict
+from datetime import datetime, date
+from .models import Lead, LeadChangeLog
 
 @login_required
 def lead_followup_and_history(request, pk):
     lead = get_object_or_404(Lead, id=pk)
+
+    # Get the referring page or default to followup URL
+    referer = request.META.get('HTTP_REFERER')
+    default_redirect = reverse('followup_today')  # Use your actual followup URL name
+    
+    # Persist redirect_to across GET and POST requests safely
+    redirect_to = (
+        request.GET.get('redirect_to') or
+        request.POST.get('redirect_to') or
+        referer or  # Try to get the referring page
+        default_redirect  # Final fallback
+    )
 
     lead_status_choices = Lead.LEAD_STAGE_CHOICES
     followup_methods = Lead.FOLLOWUP_STATUS_CHOICES
@@ -122,11 +136,12 @@ def lead_followup_and_history(request, pk):
         new_description = request.POST.get('description', '').strip()
         new_followup_date_str = request.POST.get('next_followup_date')
         new_project_type = request.POST.get('project_type')
-        new_followup_method = request.POST.get('followup_method', '')
+        new_followup_method = request.POST.get('followup_method')
 
         if not new_followup_date_str:
             messages.error(request, "Next Follow-up Date is required to submit the update.")
-            return redirect(request.path)
+            query = urlencode({'redirect_to': redirect_to})
+            return redirect(f"{request.path}?{query}")
 
         changes = []
 
@@ -140,47 +155,50 @@ def lead_followup_and_history(request, pk):
             changes.append(('description', lead.description, new_description))
             lead.description = new_description
 
-        if request.method == "POST":
-            new_followup_date_str = request.POST.get('next_followup_date')
-
-            if not new_followup_date_str:
-                messages.error(request, "Next Follow-up Date is required to submit the update.")
-                return redirect(request.path)
-
         # Project Type
-        if new_project_type and getattr(lead, 'projecttype', None) != new_project_type:
-            changes.append(('projecttype', getattr(lead, 'projecttype', ''), new_project_type))
-            lead.projecttype = new_project_type
+        current_project_type = getattr(lead, 'projecttype', None)
+        if new_project_type and current_project_type != new_project_type:
+            changes.append(('projecttype', current_project_type or '', new_project_type))
+            setattr(lead, 'projecttype', new_project_type)
 
+        # Followup Method
+        if new_followup_method and getattr(lead, 'next_followup_by', None) != new_followup_method:
+            changes.append(('next_followup_by', getattr(lead, 'next_followup_by', ''), new_followup_method))
+            setattr(lead, 'next_followup_by', new_followup_method)
 
-        # ✅ Insert this next:
+        # Next Followup Date
         if hasattr(lead, 'next_followup_date'):
-            new_followup_date = datetime.strptime(new_followup_date_str, '%Y-%m-%d').date()
+            try:
+                new_followup_date = datetime.strptime(new_followup_date_str, '%Y-%m-%dT%H:%M')
+            except ValueError:
+                messages.error(request, "Invalid date/time format for Next Follow-up Date.")
+                query = urlencode({'redirect_to': redirect_to})
+                return redirect(f"{request.path}?{query}")
 
-            if new_followup_date <= date.today():
-                messages.error(request, "Next Follow-up Date must be later than today.")
-                return redirect(request.path)
+            if new_followup_date.date() < date.today():
+                messages.error(request, "Next Follow-up Date cannot be in the past.")
+                query = urlencode({'redirect_to': redirect_to})
+                return redirect(f"{request.path}?{query}")
 
             if lead.next_followup_date != new_followup_date:
                 changes.append(('next_followup_date', lead.next_followup_date, new_followup_date))
                 lead.next_followup_date = new_followup_date
 
-                
-
         if changes:
             lead.modified_at = now()
             lead.save()
 
-            for field, old, new in changes:
+            for field, old, new_val in changes:
                 LeadChangeLog.objects.create(
                     lead=lead,
                     changed_by=request.user,
                     field_name=field,
                     old_value=str(old or ''),
-                    new_value=str(new or '')
+                    new_value=str(new_val or '')
                 )
+            messages.success(request, "Lead updated successfully.")
 
-        return redirect('lead:leads_list')
+        return redirect(redirect_to)
 
     # GET request — show form and history logs
     logs = LeadChangeLog.objects.filter(lead=lead).order_by('change_date')
@@ -233,45 +251,5 @@ def lead_followup_and_history(request, pk):
         'last_comment': getattr(lead, 'last_comment', ''),
         'followup_method': getattr(lead, 'next_followup_by', ''),
         'grouped_data': grouped_data,
+        'redirect_to': redirect_to,
     })
-
-
-
-
-
-@login_required
-def lead_details(request, pk):
-    if request.user.is_superuser:
-        # Superuser can view any lead
-        lead = get_object_or_404(Lead, pk=pk)
-    else:
-        team = Team.objects.filter(created_by=request.user).first()
-        lead = get_object_or_404(
-            Lead,
-            pk=pk,
-            team=team,
-            created_by=request.user  # Ensures normal users only access their own leads
-        )
-
-    # Optional: Group follow-ups by date
-    followup_summary = Lead.objects.filter(
-        next_followup_date__isnull=False
-    ).values('next_followup_date').annotate(
-        lead_count=Count('id')
-    ).order_by('next_followup_date')
-
-    if request.method == 'POST':
-        form = AddLeadForm(request.POST, instance=lead)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Lead updated successfully.')
-            return redirect('lead:leads_list')
-    else:
-        form = AddLeadForm(instance=lead)
-
-    context = {
-        'lead': lead,
-        'form': form,
-        'followup_summary': followup_summary,
-    }
-    return render(request, 'lead/leads_details.html', context)

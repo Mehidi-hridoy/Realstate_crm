@@ -2,80 +2,93 @@
 
 {% block content %}
 <div class="container mt-4">
-  <h3 class="mb-4">Today's Follow-Ups & Edited Leads</h3>
+  <h3 class="mb-4">Today's Follow-Ups Done & Edited Leads</h3>
 
-  <!-- Total count -->
-  <div class="card shadow-sm rounded p-1 mb-2 bg-light">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-  <h5 class="mb-0 text-primary">Total Updated Leads: {{ leads_data|length }}</h5>
-  <h5 class="mb-0 text-success">Total Created Today: {{ today_created_count }}</h5>
-</div>
-
-
-    
+  <!-- Summary Cards -->
+  <div class="card shadow-sm rounded p-3 mb-4 bg-light">
+    <div class="d-flex justify-content-between align-items-center">
+      <h5 class="mb-0 text-primary">Total Updated Leads: {{ leads_data|length }}</h5>
+      <h5 class="mb-0 text-success">Total Created Today: {{ today_created_count }}</h5>
+    </div>
   </div>
 
   {% if leads_data %}
-    <div class="row g-4">
-      {% for item in leads_data %}
-        <div class="col-md-6">
-          <div class="card shadow-sm rounded h-100 p-3 border-start border-4 
-                      {% if item.is_followed %}border-success{% elif item.is_edited %}border-primary{% else %}border-secondary{% endif %}">
-            <div class="d-flex justify-content-between align-items-start mb-2">
-              <div>
-                <h5 class="text-dark mb-1">{{ item.lead.name }}</h5>
-                <small class="text-muted">
-                  Email: {{ item.lead.email|default:"N/A" }}<br>
-                  Phone: {{ item.lead.phone|default:"N/A" }}
-                </small>
-              </div>
-              <div class="text-end">
-  {% if item.is_followed %}
-    <span class="badge bg-success mb-1">Followed Up</span><br>
-  {% endif %}
-  {% if item.lead.created_at.date == today %}
-    <span class="badge bg-primary">Created Today</span>
-  {% endif %}
-</div>
-
-            </div>
-
-            <div class="mt-2">
-              <p class="mb-1"><strong>Status:</strong> {{ item.lead.lead_status|default:"N/A" }}</p>
-
-              <p class="mb-1"><strong>Next Follow-up:</strong>
-                {% if item.lead.next_followup_date %}
-                  {{ item.lead.next_followup_date|date:"M d, Y" }}
-                {% else %}
-                  N/A
-                {% endif %}
-              </p>
-
-              <p class="mb-1"><strong>Assigned To:</strong>
-                {% if item.lead.assigned_to %}
-                  {{ item.lead.assigned_to.get_full_name|default:item.lead.assigned_to.username }}
-                {% else %}
-                  Not Assigned
-                {% endif %}
-              </p>
-
-              {% if item.lead.description %}
-                <p class="mb-1"><strong>Description:</strong> {{ item.lead.description }}</p>
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered align-middle">
+        <thead style="background-color: #f8f9fa; color: #343a40;">  <!-- Light gray bg, dark text -->
+          <tr>
+            <th>#</th> <!-- Serial Number -->
+            <th>Name</th>
+            <th>Mobile</th>
+            <th>Status</th>
+            <th>Next Follow-up</th>
+            <th>Assigned To</th>
+            <th>Description</th>
+            <th>Created By</th>
+            <th>Tags</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in leads_data %}
+          <tr class="
+            {% if item.is_followed %}table-success
+            {% elif item.is_edited %}table-primary
+            {% else %}table-secondary
+            {% endif %}
+          ">
+            <td>{{ forloop.counter }}</td>  <!-- Serial Number -->
+            <td>{{ item.lead.name }}</td>
+            <td>{{ item.lead.phone|default:"N/A" }}</td>
+            <td>{{ item.lead.lead_status|default:"N/A" }}</td>
+            <td>
+              {% if item.lead.next_followup_date %}
+                {{ item.lead.next_followup_date|date:"M d, Y" }}
+              {% else %}
+                N/A
               {% endif %}
+            </td>
+            <td>
+              {% if item.lead.assigned_to %}
+                {{ item.lead.assigned_to.get_full_name|default:item.lead.assigned_to.username }}
+              {% else %}
+                Not Assigned
+              {% endif %}
+            </td>
+            <td>{{ item.lead.description|default:"-" }}</td>
+            <td>
+              {% if item.lead.created_by %}
+                {{ item.lead.created_by.username }}
+              {% else %}
+                Unknown
+              {% endif %}
+            </td>
+            <td>
+              {% if item.is_followed %}
+                <span class="badge bg-success">Followed Up</span><br>
+              {% endif %}
+              {% if item.lead.created_at.date == today %}
+                <span class="badge bg-primary">Created Today</span>
+              {% else %}
+                <span class="text-muted">Old Lead</span>
+              {% endif %}
+            </td>
 
-                <p class="text-muted small mt-2">
-  <strong>Created By:</strong> 
-  {% if item.lead.created_by %}
-    {{ item.lead.created_by.username }}
-  {% else %}
-    Unknown
-  {% endif %}
-</p>
+            <td class="text-nowrap">
+              
+           
+<a href="{% url 'lead:lead_change_history' item.lead.id %}?redirect_to={{ request.path|urlencode }}" class="btn btn-outline-primary btn-sm mb-1">
+    Update
+</a>
+<a href="{% url 'edit_leads' item.lead.id %}?redirect_to={{ request.path|urlencode }}" class="btn btn-outline-secondary btn-sm mb-1">
+    Edit
+</a>
 
-            </div>
-          </div>
-        </div>
-      {% endfor %}
+           
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   {% else %}
     <div class="alert alert-info">No follow-ups or edits for today.</div>
