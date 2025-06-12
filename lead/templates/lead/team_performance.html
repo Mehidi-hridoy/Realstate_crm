@@ -1,0 +1,86 @@
+{% extends 'crm/base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">🚀 Team Performance Dashboard</h2>
+
+    <!-- Stage Count Section -->
+    <div class="row">
+        {% for stage, count in stage_counts.items %}
+        <div class="col-md-3 mb-3">
+            <div class="card text-white bg-primary h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ stage|title }}</h5>
+                    <p class="card-text display-5">{{ count }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Overall Analysis -->
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h5>Total Leads</h5>
+                    <p class="display-6">{{ total_leads }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h5>Converted Leads</h5>
+                    <p class="display-6">{{ converted_leads }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h5>Conversion Rate</h5>
+                    <p class="display-6">
+                        {% if total_leads > 0 %}
+                            {{ converted_leads|divisibleby:total_leads|floatformat:2 }}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Team Member Performance Table -->
+    <div class="mt-5">
+        <h4 class="mb-3">📊 Performance by Team Member</h4>
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Team Member</th>
+                    <th>Total Leads</th>
+                    <th>Converted</th>
+                    <th>Conversion Rate</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for member in team_stats %}
+                <tr>
+                    <td>{{ member.name }}</td>
+                    <td>{{ member.total }}</td>
+                    <td>{{ member.converted }}</td>
+                    <td>
+                        {% if member.total > 0 %}
+                            {{ member.converted|divisibleby:member.total|floatformat:2 }}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

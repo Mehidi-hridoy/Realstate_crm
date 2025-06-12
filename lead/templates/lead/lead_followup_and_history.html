@@ -12,136 +12,236 @@
 {% endif %}
 
 <div class="container mt-4">
-    <h2 class="mb-4">Change History for {{ lead.name }}</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Lead Management: {{ lead.name }}</h2>
+        <span class="badge bg-{% if lead.lead_status == 'new' %}primary{% elif lead.lead_status == 'contacted' %}info{% elif lead.lead_status == 'qualified' %}warning{% elif lead.lead_status == 'converted' %}success{% else %}secondary{% endif %}">
+            {{ lead.get_lead_status_display }}
+        </span>
+    </div>
 
-    {% if grouped_data %}
+    <!-- Status Timeline -->
     <div class="mb-4">
-        <table class="table table-sm table-bordered table-striped" style="font-size: 0.75rem;">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Description</th>
-                    {% if request.user.is_superuser %}
-                        <th>Fields</th>
-                    {% endif %}
-                    <th>Previous Stage</th>
-                    <th>New Stage</th>
-                    <th>Next Follow-up</th>
-                    <th>Updated By</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for group in grouped_data %}
-                <tr>
-                    <td>{{ group.datetime }}</td>
-                    <td>{{ group.logs.0.new_value }}</td>
-                    {% if request.user.is_superuser %}
-                        <td>
-                            {% for log in group.logs %}
-                                {% if log.field_name != "description" %}
-                                    {{ log.field_name|title }}{% if not forloop.last %}, {% endif %}
+        <h5 class="mb-3">Lead Journey</h5>
+        <div class="timeline">
+            {% for stage in lead_status_choices %}
+                <div class="timeline-step {% if lead.lead_status == stage.0 %}active{% elif stage.0 in completed_stages %}completed{% endif %}">
+                    <div class="timeline-content">
+                        <div class="circle"></div>
+                        <p class="timeline-date">
+                            {% for log in grouped_data %}
+                                {% if log.lead_status_new == stage.0 %}
+                                    {{ log.datetime|date:"M d, Y" }}
                                 {% endif %}
                             {% endfor %}
-                        </td>
-                    {% endif %}
-                    <td>{{ group.lead_status_old|default:"-" }}</td>
-                    <td>{{ group.lead_status_new }}</td>
-                    <td>{{ group.next_followup_date|default:"-" }}</td>
-                    <td>{{ group.logs.0.changed_by.get_full_name|default:group.logs.0.changed_by.username }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                        </p>
+                        <p class="timeline-title">{{ stage.1 }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
     </div>
-    {% else %}
-        <p>No change history available.</p>
-    {% endif %}
+
+    <!-- Change History -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-3">Activity History</h5>
+            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#historyTable">
+                Toggle History
+            </button>
+        </div>
+        
+        <div class="collapse show" id="historyTable">
+            {% if grouped_data %}
+            <div class="table-responsive">
+                <table class="table table-sm table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Last Comment</th>
+                            <th>Stage Change</th>
+                            <th>Next Follow-up</th>
+                            <th>Updated By</th>
+                            {% if request.user.is_superuser %}
+                                <th>Details</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for group in grouped_data %}
+                        <tr>
+                            <td>{{ group.datetime }}</td>
+                            <td>
+                                <strong>{{ group.logs.0.new_value }}</strong>
+                                {% if group.followup_method %}
+                                    <br><small class="text-muted">Method: {{ group.get_followup_method_display }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if group.lead_status_old %}
+                                    <span class="badge bg-light text-dark">{{ group.lead_status_old }}</span> →
+                                {% endif %}
+                                <span class="badge bg-{% if group.lead_status_new == 'new' %}primary{% elif group.lead_status_new == 'contacted' %}info{% elif group.lead_status_new == 'qualified' %}warning{% elif group.lead_status_new == 'converted' %}success{% else %}secondary{% endif %}">
+                                    {{ group.lead_status_new }}
+                                </span>
+                            </td>
+                            <td>{{ group.next_followup_date|default:"-" }}</td>
+
+                            <td>{{ group.logs.0.changed_by.get_full_name|default:group.logs.0.changed_by.username }}</td>
+                            {% if request.user.is_superuser %}
+                                <td>
+                                    <button class="btn btn-sm btn-outline-info" type="button" data-bs-toggle="collapse" data-bs-target="#details-{{ forloop.counter }}">
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                </td>
+                            {% endif %}
+                        </tr>
+                        {% if request.user.is_superuser %}
+                        <tr class="collapse" id="details-{{ forloop.counter }}">
+                            <td colspan="6">
+                                <div class="p-2 bg-light">
+                                    <strong>Detailed Changes:</strong>
+                                    <ul class="mb-0">
+                                        {% for log in group.logs %}
+                                            <li>
+                                                <strong>{{ log.field_name|title }}:</strong>
+                                                {% if log.old_value %}Changed from "{{ log.old_value }}" to {% endif %}
+                                                "{{ log.new_value }}"
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                <div class="alert alert-info">No activity history available for this lead.</div>
+            {% endif %}
+        </div>
+    </div>
 
     <hr class="my-4">
 
-    <form method="post" novalidate>
-        {% csrf_token %}
-<input type="hidden" name="redirect_to" value="{{ redirect_to }}">
-        <div class="form-group">
-            <label for="lead_status">Lead Status</label>
-            <select name="lead_status" id="lead_status" class="form-control form-control-sm">
-                {% for key, label in lead_status_choices %}
-                    <option value="{{ key }}" {% if lead.lead_status == key %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
+    <!-- Update Form -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Update Lead Status</h5>
         </div>
-
-        <div class="form-group mt-3">
-            <label for="description">Follow-up Note</label>
-            <textarea name="description" id="description" class="form-control form-control-sm" rows="2"></textarea>
+        <div class="card-body">
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="redirect_to" value="{{ redirect_to }}">
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="lead_status" class="form-label">Current Stage</label>
+                            <select name="lead_status" id="lead_status" class="form-select">
+                                {% for key, label in lead_status_choices %}
+                                    <option value="{{ key }}" {% if lead.lead_status == key %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Select the current stage of this lead</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="project_type" class="form-label">Project Type</label>
+                            <select name="project_type" id="project_type" class="form-select">
+                                {% for key, label in project_type_choices %}
+                                    <option value="{{ key }}" {% if project_status == key %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12">
+                        <div class="form-group">
+                            <label for="description" class="form-label">Follow-up Notes</label>
+                            <textarea name="description" id="description" class="form-control" rows="3" placeholder="Enter details of your conversation or next steps..."></textarea>
+                            <div class="form-text">Be specific about what was discussed and agreed upon</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="next_followup_date" class="form-label">Next Follow-up Date <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="datetime-local" name="next_followup_date" id="next_followup_date" class="form-control" required>
+                                <button type="button" class="btn btn-outline-secondary" id="todayBtn">Today</button>
+                                <button type="button" class="btn btn-outline-secondary" id="tomorrowBtn">Tomorrow</button>
+                            </div>
+                            <div class="form-text">Set a reminder for your next interaction</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="followup_method" class="form-label">Follow-up Method</label>
+                            <select name="followup_method" id="followup_method" class="form-select">
+                                {% for key, label in followup_methods %}
+                                    <option value="{{ key }}" {% if followup_method == key %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4 d-flex justify-content-between">
+                    <div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Update Lead
+                        </button>
+                        <a href="{% url 'lead:leads_list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                    {% if last_comment %}
+                    <div class="alert alert-info mb-0">
+                        <strong>Last Note:</strong> {{ last_comment }}
+                    </div>
+                    {% endif %}
+                </div>
+            </form>
         </div>
-
-        <div class="form-group mt-3">
-            <label for="next_followup_date">Next Follow-up Date <span class="text-danger">*</span></label>
-            <input type="datetime-local" name="next_followup_date" id="next_followup_date" class="form-control form-control-sm" required>
-        </div>
-
-        <div class="form-group mt-3">
-            <label for="project_type">Project Type</label>
-            <select name="project_type" id="project_type" class="form-control form-control-sm">
-                {% for key, label in project_type_choices %}
-                    <option value="{{ key }}" {% if project_status == key %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="form-group mt-3">
-            <label for="followup_method">Follow-up Method</label>
-            <select name="followup_method" id="followup_method" class="form-control form-control-sm">
-                {% for key, label in followup_methods %}
-                    <option value="{{ key }}" {% if followup_method == key %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="mt-4">
-            <button type="submit" class="btn btn-primary btn-sm">Update</button>
-            <a href="{% url 'lead:leads_list' %}" class="btn btn-secondary btn-sm">Cancel</a>
-        </div>
-         
-
-    </form>
-
-    <script>
-        document.querySelector("form").addEventListener("submit", function(event) {
-            let nextFollowUpDate = document.getElementById("next_followup_date").value;
-            if (!nextFollowUpDate) {
-                alert("Next Follow-up Date is required.");
-                event.preventDefault();
-            }
-        });
-    </script>
-
-    {% if last_comment %}
-    <div class="mt-4">
-        <h5>Last Comment</h5>
-        <p>{{ last_comment }}</p>
     </div>
-    {% endif %}
 </div>
+
+
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const form = document.querySelector("form");  // Adjust selector if needed
-    const followupDateInput = document.querySelector("input[name='next_followup_date']");
+document.addEventListener("DOMContentLoaded", function() {
+    const leadStatusField = document.getElementById("lead_status");
+    const followupDateField = document.getElementById("next_followup_date");
 
-    if (form && followupDateInput) {
-        form.addEventListener("submit", function (e) {
-            const inputDate = new Date(followupDateInput.value);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0); // Clear time for accurate comparison
-
-            if (inputDate <= today) {
-                e.preventDefault();  // Prevent form from submitting
-                alert("Next Follow-up Date must be later than today.");
-            }
-        });
+    function getCurrentDateTimeLocal() {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); // adjust for timezone
+        return now.toISOString().slice(0, 16);
     }
+
+    function handleStatusChange() {
+        const status = leadStatusField.value;
+        if (status.toLowerCase() === "sold_onboard") {
+            followupDateField.value = getCurrentDateTimeLocal();
+            followupDateField.setAttribute("readonly", "readonly");
+            followupDateField.setAttribute("disabled", "disabled");
+        } else {
+            followupDateField.removeAttribute("readonly");
+            followupDateField.removeAttribute("disabled");
+        }
+    }
+
+    // Attach change listener
+    leadStatusField.addEventListener("change", handleStatusChange);
+
+    // Call on page load
+    handleStatusChange();
 });
 </script>
+
 
 {% endblock %}

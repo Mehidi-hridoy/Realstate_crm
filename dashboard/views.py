@@ -15,66 +15,71 @@ from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.db.models import Q, F
 from lead.utils import get_followup_today_count,get_missed_followup_count, get_scheduled_followup_count # adjust import path as needed
+from django.contrib.auth.models import User
+from django.utils.timezone import now
+from datetime import datetime, timedelta
+from django.db.models import Q, Count
 
 @login_required
 def dashboard(request):
-    # Superusers see all leads and clients; others see only their own team's
+    # Get filter values from request
+    username = request.GET.get('username')
+    date_filter = request.GET.get('date_filter')
+
+    # Base filters
     if request.user.is_superuser:
-        lead_filter = {}
-        client_filter = {}
+        lead_filter = Q()
+        client_filter = Q()
     else:
         team = Team.objects.filter(created_by=request.user).first()
-        lead_filter = {'team': team, 'created_by': request.user}
-        client_filter = {'team': team, 'created_by': request.user}
-        
-    # Lead status counts for dashboard metrics
-    total_leads = Lead.objects.filter(**lead_filter).count()
-    sold_count = Lead.objects.filter(**lead_filter, lead_status='sold_onboard').count()
-    hold_count = Lead.objects.filter(**lead_filter, lead_status='hold').count()
-    lead_count = Lead.objects.filter(**lead_filter, lead_status='lead').count()
-    junk_count = Lead.objects.filter(**lead_filter, lead_status='junk').count()
-    prospect_count = Lead.objects.filter(**lead_filter, lead_status='prospect').count()
-    high_prospect_count = Lead.objects.filter(**lead_filter, lead_status='high_prospect').count()
-    lost_count = Lead.objects.filter(**lead_filter, lead_status='lost').count()
+        lead_filter = Q(team=team, created_by=request.user)
+        client_filter = Q(team=team, created_by=request.user)
 
-    # Count of leads grouped by their current status
+    # Apply user filter
+    if username:
+        lead_filter &= Q(created_by__username=username)
+
+    # Apply date filter
+    today = now().date()
+    if date_filter == 'today':
+        lead_filter &= Q(created_at__date=today)
+    elif date_filter == 'week':
+        start_of_week = today - timedelta(days=today.weekday())
+        end_of_week = start_of_week + timedelta(days=6)
+        lead_filter &= Q(created_at__date__range=[start_of_week, end_of_week])
+    elif date_filter == 'month':
+        lead_filter &= Q(created_at__month=today.month, created_at__year=today.year)
+
+    # Dashboard counts
+    total_leads = Lead.objects.filter(lead_filter).count()
+    sold_count = Lead.objects.filter(lead_filter, lead_status='sold_onboard').count()
+    hold_count = Lead.objects.filter(lead_filter, lead_status='hold').count()
+    lead_count = Lead.objects.filter(lead_filter, lead_status='lead').count()
+    junk_count = Lead.objects.filter(lead_filter, lead_status='junk').count()
+    prospect_count = Lead.objects.filter(lead_filter, lead_status='prospect').count()
+    high_prospect_count = Lead.objects.filter(lead_filter, lead_status='high_prospect').count()
+    lost_count = Lead.objects.filter(lead_filter, lead_status='lost').count()
+
     leads_by_status = (
-        Lead.objects.filter(**lead_filter)
+        Lead.objects.filter(lead_filter)
         .values('lead_status')
         .annotate(count=Count('id'))
     )
 
-    # Show most recent leads and clients
-    recent_leads = Lead.objects.filter(**lead_filter).order_by("-created_at")[:5]
-    recent_clients = Client.objects.filter(**client_filter).order_by("-created_at")[:5]
+    recent_leads = Lead.objects.filter(lead_filter).order_by("-created_at")[:5]
+    recent_clients = Client.objects.filter(client_filter).order_by("-created_at")[:5]
 
-    # Count of today's follow-ups (custom logic based on user access)
-    if request.user.is_superuser:
-        followup_today_count = get_followup_today_count(None)  # Handle all users in function
-    else:
-        followup_today_count = get_followup_today_count(request.user)
-    today = now().date()
+    followup_today_count = get_followup_today_count(None if request.user.is_superuser else request.user)
     today_scheduled_count = get_scheduled_followup_count(request.user)
+    upcoming_count = Lead.objects.filter(lead_filter, next_followup_date__gt=today).count()
+    missed_followup_count = get_missed_followup_count(request.user)
 
-
-
-    # Count of upcoming follow-ups after today
+    # Get user list for dropdown
     if request.user.is_superuser:
-        upcoming_count = Lead.objects.filter(next_followup_date__gt=today).count()
+        user_list = User.objects.all()
     else:
-        upcoming_count = Lead.objects.filter(next_followup_date__gt=today, created_by=request.user).count()
+        user_list = User.objects.filter(id=request.user.id)
 
-
-
-    # Count of follow-ups that were missed (scheduled before today)
-    if request.user.is_superuser:
-        missed_followup_count = get_missed_followup_count(request.user)
-    else:
-        missed_followup_count = get_missed_followup_count(request.user)
-
-
-
-    # Passing all metrics and data to the dashboard template
     context = {
         'total_leads': total_leads,
         'followup_today_count': followup_today_count,
@@ -92,9 +97,31 @@ def dashboard(request):
         'recent_leads': recent_leads,
         'recent_clients': recent_clients,
         'leads_by_status': leads_by_status,
+        'username': username,
+        'date_filter': date_filter,
+        'user_list': user_list,
     }
 
     return render(request, 'dashboard/dashboard.html', context)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 @login_required

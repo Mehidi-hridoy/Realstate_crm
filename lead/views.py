@@ -13,8 +13,8 @@ from django.utils.timezone import now
 from collections import defaultdict
 from django.utils.timezone import localtime
 from django.urls import reverse
-
-
+from django.utils.http import urlencode
+from django.contrib.auth import get_user_model
 
 
 @login_required
@@ -101,30 +101,29 @@ def convert_to_client(request, pk):
     return redirect('leads_list')
 
 
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils.timezone import now, localtime
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.utils.http import urlencode
 from collections import defaultdict
 from datetime import datetime, date
-from .models import Lead, LeadChangeLog
+from urllib.parse import urlencode
+
+from .models import Lead, LeadChangeLog  # Adjust if your model import path is different
+
 
 @login_required
 def lead_followup_and_history(request, pk):
     lead = get_object_or_404(Lead, id=pk)
 
-    # Get the referring page or default to followup URL
     referer = request.META.get('HTTP_REFERER')
-    default_redirect = reverse('followup_today')  # Use your actual followup URL name
-    
-    # Persist redirect_to across GET and POST requests safely
+    default_redirect = reverse('followup_today')
     redirect_to = (
         request.GET.get('redirect_to') or
         request.POST.get('redirect_to') or
-        referer or  # Try to get the referring page
-        default_redirect  # Final fallback
+        referer or
+        default_redirect
     )
 
     lead_status_choices = Lead.LEAD_STAGE_CHOICES
@@ -139,16 +138,21 @@ def lead_followup_and_history(request, pk):
         new_followup_method = request.POST.get('followup_method')
 
         if not new_followup_date_str:
-            messages.error(request, "Next Follow-up Date is required to submit the update.")
+            messages.error(request, "Next Follow-up Date is required.")
             query = urlencode({'redirect_to': redirect_to})
             return redirect(f"{request.path}?{query}")
 
         changes = []
 
-        # Lead Status
+        # Lead Status Change
         if new_status and lead.lead_status != new_status:
             changes.append(('lead_status', lead.lead_status, new_status))
             lead.lead_status = new_status
+
+        # Clear next follow-up if lead is marked sold
+        if new_status and new_status.lower() == "sold_onboard":
+            changes.append(('next_followup_date', str(lead.next_followup_date), 'None'))
+            lead.next_followup_date = None
 
         # Description
         if lead.description != new_description:
@@ -156,33 +160,33 @@ def lead_followup_and_history(request, pk):
             lead.description = new_description
 
         # Project Type
-        current_project_type = getattr(lead, 'projecttype', None)
+        current_project_type = getattr(lead, 'projecttype', '')
         if new_project_type and current_project_type != new_project_type:
-            changes.append(('projecttype', current_project_type or '', new_project_type))
+            changes.append(('projecttype', current_project_type, new_project_type))
             setattr(lead, 'projecttype', new_project_type)
 
-        # Followup Method
-        if new_followup_method and getattr(lead, 'next_followup_by', None) != new_followup_method:
-            changes.append(('next_followup_by', getattr(lead, 'next_followup_by', ''), new_followup_method))
+        # Follow-up Method
+        current_method = getattr(lead, 'next_followup_by', '')
+        if new_followup_method and current_method != new_followup_method:
+            changes.append(('next_followup_by', current_method, new_followup_method))
             setattr(lead, 'next_followup_by', new_followup_method)
 
-        # Next Followup Date
-        if hasattr(lead, 'next_followup_date'):
-            try:
-                new_followup_date = datetime.strptime(new_followup_date_str, '%Y-%m-%dT%H:%M')
-            except ValueError:
-                messages.error(request, "Invalid date/time format for Next Follow-up Date.")
-                query = urlencode({'redirect_to': redirect_to})
-                return redirect(f"{request.path}?{query}")
+        # Next Follow-up Date
+        try:
+            new_followup_date = datetime.strptime(new_followup_date_str, '%Y-%m-%dT%H:%M')
+        except ValueError:
+            messages.error(request, "Invalid format for Next Follow-up Date.")
+            query = urlencode({'redirect_to': redirect_to})
+            return redirect(f"{request.path}?{query}")
 
-            if new_followup_date.date() < date.today():
-                messages.error(request, "Next Follow-up Date cannot be in the past.")
-                query = urlencode({'redirect_to': redirect_to})
-                return redirect(f"{request.path}?{query}")
+        if new_followup_date.date() < date.today():
+            messages.error(request, "Next Follow-up Date cannot be in the past.")
+            query = urlencode({'redirect_to': redirect_to})
+            return redirect(f"{request.path}?{query}")
 
-            if lead.next_followup_date != new_followup_date:
-                changes.append(('next_followup_date', lead.next_followup_date, new_followup_date))
-                lead.next_followup_date = new_followup_date
+        if lead.next_followup_date != new_followup_date and new_status.lower() != "sold on-board":
+            changes.append(('next_followup_date', str(lead.next_followup_date), str(new_followup_date)))
+            lead.next_followup_date = new_followup_date
 
         if changes:
             lead.modified_at = now()
@@ -193,14 +197,14 @@ def lead_followup_and_history(request, pk):
                     lead=lead,
                     changed_by=request.user,
                     field_name=field,
-                    old_value=str(old or ''),
-                    new_value=str(new_val or '')
+                    old_value=old or '',
+                    new_value=new_val or ''
                 )
             messages.success(request, "Lead updated successfully.")
 
         return redirect(redirect_to)
 
-    # GET request — show form and history logs
+    # GET Request — Prepare Change Logs
     logs = LeadChangeLog.objects.filter(lead=lead).order_by('change_date')
 
     grouped_logs = defaultdict(list)
@@ -208,8 +212,8 @@ def lead_followup_and_history(request, pk):
         dt = localtime(log.change_date).strftime('%Y-%m-%d %H:%M')
         grouped_logs[dt].append(log)
 
-    last_stage = lead.lead_status or "(blank)"
     grouped_data = []
+    last_stage = lead.lead_status or "(blank)"
 
     for dt, logs_group in sorted(grouped_logs.items()):
         lead_status_old = None
@@ -224,16 +228,12 @@ def lead_followup_and_history(request, pk):
             elif field == 'next_followup_date':
                 next_followup_date = log.new_value
 
-        if lead_status_old is None and lead_status_new is None:
-            lead_status_old = last_stage
-            lead_status_new = last_stage
-
         grouped_data.append({
             'datetime': dt,
             'logs': logs_group,
             'next_followup_date': next_followup_date,
-            'lead_status_old': lead_status_old,
-            'lead_status_new': lead_status_new,
+            'lead_status_old': lead_status_old or last_stage,
+            'lead_status_new': lead_status_new or last_stage,
         })
 
         if lead_status_new and lead_status_new != "(blank)":
@@ -253,3 +253,40 @@ def lead_followup_and_history(request, pk):
         'grouped_data': grouped_data,
         'redirect_to': redirect_to,
     })
+
+
+
+
+def team_performance(request):
+    # Count leads by stage
+    stage_counts = Lead.objects.values('stage').annotate(count=Count('id'))
+    stage_dict = {entry['stage']: entry['count'] for entry in stage_counts}
+
+    # Total and converted leads
+    total_leads = Lead.objects.count()
+    converted_leads = Lead.objects.filter(stage='Won').count()
+
+    # Team performance
+    team_stats = []
+    User = get_user_model()
+    users = User.objects.all()
+
+    for user in users:
+        user_leads = Lead.objects.filter(assigned_to=user)
+        user_total = user_leads.count()
+        user_converted = user_leads.filter(stage='Won').count()
+
+        team_stats.append({
+            'name': f"{user.first_name} {user.last_name}".strip() or user.username,
+            'total': user_total,
+            'converted': user_converted,
+        })
+
+    context = {
+        'stage_counts': stage_dict,
+        'total_leads': total_leads,
+        'converted_leads': converted_leads,
+        'team_stats': team_stats,
+    }
+
+    return render(request, 'lead/team_performance.html', context)

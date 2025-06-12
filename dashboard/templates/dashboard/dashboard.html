@@ -122,6 +122,69 @@
 
 
 
+
+
+
+
+
+
+<form method="get" class="row g-3 mb-4">
+  {% if request.user.is_superuser %}
+    <!-- Admin: show both username and date filters -->
+    <div class="col-md-4">
+      <select name="username" class="form-select">
+        <option value="">All Users</option>
+        {% for user in user_list %}
+          <option value="{{ user.username }}" {% if user.username == username %}selected{% endif %}>
+            {{ user.get_full_name|default:user.username }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-4">
+      <select name="date_filter" class="form-select">
+        <option value="">All Dates</option>
+        <option value="today" {% if date_filter == "today" %}selected{% endif %}>Today</option>
+        <option value="week" {% if date_filter == "week" %}selected{% endif %}>This Week</option>
+        <option value="month" {% if date_filter == "month" %}selected{% endif %}>This Month</option>
+      </select>
+    </div>
+  {% else %}
+    <!-- Normal users: show only date filter -->
+    <div class="col-md-8">
+      <select name="date_filter" class="form-select">
+        <option value="">All Dates</option>
+        <option value="today" {% if date_filter == "today" %}selected{% endif %}>Today</option>
+        <option value="week" {% if date_filter == "week" %}selected{% endif %}>This Week</option>
+        <option value="month" {% if date_filter == "month" %}selected{% endif %}>This Month</option>
+      </select>
+    </div>
+  {% endif %}
+
+  <div class="col-md-2">
+    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+  </div>
+
+  <div class="col-md-2">
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary w-100">Clear Filters</a>
+  </div>
+</form>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   <!-- Stats Cards Section -->
   <div class="stats-section container my-4">
     <!-- Add Bootstrap CSS and Icons CDN -->
