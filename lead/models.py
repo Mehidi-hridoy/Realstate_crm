@@ -167,7 +167,7 @@ class Lead(models.Model):
         ]
     )
     present_address = models.CharField("Present Address", max_length=20, choices=PREFERRED_LOCATION_CHOICES, blank=True, null=True)
-    primaryemail = models.EmailField("Primary Email", blank=True, null=True)
+    primaryemail = models.EmailField("Primary Email", max_length=254, blank=True, null=True)
     secondaryemail = models.EmailField("Secondary Email", blank=True, null=True)
     profession = models.CharField("Profession", max_length=20, choices=PROFESSION_CHOICES, blank=True, null=True)
     resident = models.CharField("Resident", max_length=100, blank=True, null=True)
@@ -187,7 +187,6 @@ class Lead(models.Model):
     teamleader = models.CharField("Team Leader", max_length=20, choices=TEAM_LEADER_CHOICES, default='iktadul',blank=True, null=True)
     description = models.TextField("Description", blank=True, null=True)
     converted_to_client = models.BooleanField("Converted to Client", default=False)
-    created_by = models.ForeignKey(User, related_name='leads', on_delete=models.CASCADE)
     created_at = models.DateTimeField("Created At", auto_now_add=True)
     modified_at = models.DateTimeField("Modified At", auto_now=True)
     followup_by = models.CharField("Follow Up By", max_length=50, choices=FOLLOWUP_STATUS_CHOICES, blank=True, null=True)
@@ -195,6 +194,8 @@ class Lead(models.Model):
     next_followup_by = models.CharField(max_length=20, choices=FOLLOWUP_STATUS_CHOICES, blank=True, null=True)
     next_followup_date = models.DateField("Next Follow Up Date", blank=True, null=True)
     modified_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(User, related_name='leads', on_delete=models.CASCADE)
+    transfer_to = models.ForeignKey(User, related_name='transferred_leads', on_delete=models.SET_NULL, null=True, blank=True)
     
 
     unique_id = models.CharField(max_length=255, unique=True, blank=True, null=True)

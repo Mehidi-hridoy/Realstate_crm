@@ -1,18 +1,16 @@
 
-from lead.forms import   AddLeadForm
+from lead.forms import AddLeadForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from lead.models import Lead
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.timezone import now # adjust import if needed
-from datetime import datetime
 from client.models import Client
 from teams.models import Team
 from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect
 from dashboard.models import FollowUp
 from django.views.decorators.http import require_POST
-from django.utils import timezone
 from django.db.models import Q, F
 from lead.utils import get_followup_today_count,get_missed_followup_count, get_scheduled_followup_count # adjust import path as needed
 from django.contrib.auth.models import User
@@ -103,18 +101,6 @@ def dashboard(request):
     }
 
     return render(request, 'dashboard/dashboard.html', context)
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

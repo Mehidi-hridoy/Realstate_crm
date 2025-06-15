@@ -3,11 +3,31 @@
 {% block title %}Lead List{% endblock %}
 
 {% block content %}
+
+<div id="message-container">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<a href="{% url 'lead:lead_download_excel' %}" class="btn btn-success btn-sm mb-3">
+    Download Leads as Excel
+</a>
+
+
 <div class="lead-list-container container-fluid px-3 py-4">
+    <!-- Header and Breadcrumb -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h4 fw-semibold mb-1">
-                All Lead List {% if total_leads is not None %}<span class="badge bg-primary ms-2">{{ total_leads }}</span>{% endif %}
+                All Lead List
+                {% if total_leads is not None %}
+                    <span class="badge bg-primary ms-2">{{ total_leads }}</span>
+                {% endif %}
             </h1>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
@@ -23,11 +43,11 @@
         </div>
     </div>
 
-    <!-- Filtered Count Card -->
+    <!-- Filtered Leads Count and Reset -->
     <div class="card mb-4 shadow-sm">
         <div class="card-body py-2 px-3 d-flex justify-content-between align-items-center">
             <div>
-                <strong class="me-2">Filtered Leads:</strong> 
+                <strong class="me-2">Filtered Leads:</strong>
                 <span id="filteredCount" class="badge bg-info text-dark">{{ leads|length }}</span>
             </div>
             <div>
@@ -38,55 +58,59 @@
         </div>
     </div>
 
+    <!-- Lead Transfer Form (Superuser Only) -->
+    {% if request.user.is_superuser %}
+    <form method="POST" action="{% url 'lead:lead_transfer' %}">
+        {% csrf_token %}
+        <div class="d-flex align-items-center justify-content-start mb-3 gap-2">
+            <label class="form-label me-2 mb-0">Transfer From:</label>
+            <select name="current_owner" class="form-select form-select-sm w-auto" required>
+                <option value="">Select User</option>
+                {% for user in users %}
+                    <option value="{{ user.id }}">{{ user.username }}</option>
+                {% endfor %}
+            </select>
+            <label class="form-label me-2 mb-0">Transfer To:</label>
+            <select name="new_owner" class="form-select form-select-sm w-auto" required>
+                <option value="">Select User</option>
+                {% for user in users %}
+                    <option value="{{ user.id }}">{{ user.username }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-warning btn-sm">Transfer Selected Leads</button>
+        </div>
+    {% endif %}
+
+    <!-- Leads Table -->
     {% if leads %}
     <div class="table-responsive rounded-3 border shadow-sm">
         <table class="table table-hover mb-0" id="leadTable">
             <thead class="table-light">
                 <tr>
-                    <th class="align-middle">SL No.
-                        <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(1, this.value)" placeholder="Filter...">
-                    </th>
-                    <th class="align-middle">ID
-                        <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(2, this.value)" placeholder="Filter...">
-                    </th>
-                    <th class="align-middle">Name
-                        <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(3, this.value)" placeholder="Filter...">
-                    </th>
-                    <th class="align-middle">Number
-                        <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(4, this.value)" placeholder="Filter...">
-                    </th>
-                    <th class="align-middle">Created By
-                        <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(5, this.value)" placeholder="Filter...">
-                    </th>
-                    <th class="align-middle">Created Date
-                        <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(6, this.value)" placeholder="Filter...">
-                    </th>
-                    <th class="align-middle">Team Leader
-                        <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(7, this.value)" placeholder="Filter...">
-                    </th>
-                    <th class="align-middle">Lead Source
-                        <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(8, this.value)" placeholder="Filter...">
-                    </th>
-                    <th class="align-middle">Sub Source
-                        <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(9, this.value)" placeholder="Filter...">
-                    </th>
-                    <th class="align-middle">Budget
-                        <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(10, this.value)" placeholder="Filter...">
-                    </th>
-                    <th class="align-middle">Stage
-                        <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(11, this.value)" placeholder="Filter...">
-                    </th>
-                    <th class="align-middle">Email
-                        <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(12, this.value)" placeholder="Filter...">
-                    </th>
-                    <th class="align-middle">Next Follow-Up
-                        <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(13, this.value)" placeholder="Filter...">
-                    </th>
+                    {% if request.user.is_superuser %}
+                        <th><input type="checkbox" onclick="toggleSelectAll(this)"></th>
+                    {% endif %}
+                    <th>SL No. <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(1, this.value)" placeholder="Filter..."></th>
+                    <th>ID <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(2, this.value)" placeholder="Filter..."></th>
+                    <th>Name <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(3, this.value)" placeholder="Filter..."></th>
+                    <th>Number <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(4, this.value)" placeholder="Filter..."></th>
+                    <th>Created By <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(5, this.value)" placeholder="Filter..."></th>
+                    <th>Created Date <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(6, this.value)" placeholder="Filter..."></th>
+                    <th>Team Leader <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(7, this.value)" placeholder="Filter..."></th>
+                    <th>Lead Source <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(8, this.value)" placeholder="Filter..."></th>
+                    <th>Sub Source <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(9, this.value)" placeholder="Filter..."></th>
+                    <th>Budget <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(10, this.value)" placeholder="Filter..."></th>
+                    <th>Stage <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(11, this.value)" placeholder="Filter..."></th>
+                    <th>Email <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(12, this.value)" placeholder="Filter..."></th>
+                    <th>Next Follow-Up <input type="text" class="form-control form-control-sm mt-1" onkeyup="filterColumn(13, this.value)" placeholder="Filter..."></th>
                 </tr>
             </thead>
             <tbody>
                 {% for lead in leads %}
                 <tr class="align-middle">
+                    {% if request.user.is_superuser %}
+                        <td><input type="checkbox" name="lead_ids" value="{{ lead.id }}"></td>
+                    {% endif %}
                     <td>{{ forloop.counter }}</td>
                     <td>{{ lead.unique_id }}</td>
                     <td>
@@ -107,9 +131,9 @@
                     </td>
                     <td>
                         {% if lead.primaryemail %}
-                        <a href="mailto:{{ lead.primaryemail }}" class="text-decoration-none">
-                            {{ lead.primaryemail|truncatechars:15 }}
-                        </a>
+                            <a href="mailto:{{ lead.primaryemail }}" class="text-decoration-none">
+                                {{ lead.primaryemail|truncatechars:15 }}
+                            </a>
                         {% else %}-{% endif %}
                     </td>
                     <td>{{ lead.next_followup_date|default:"-" }}</td>
@@ -118,6 +142,9 @@
             </tbody>
         </table>
     </div>
+    {% if request.user.is_superuser %}
+    </form>
+    {% endif %}
     {% else %}
     <div class="alert alert-light border text-center py-4" role="alert">
         <i class="bi bi-info-circle-fill me-2"></i> No leads found.
@@ -125,32 +152,33 @@
     {% endif %}
 </div>
 
-
-
+<!-- Message Animation Script -->
 <script>
-    // Initialize data labels for mobile view
     document.addEventListener('DOMContentLoaded', function() {
-        const headers = document.querySelectorAll('#leadTable thead th');
-        const rows = document.querySelectorAll('#leadTable tbody tr');
-        
-        headers.forEach((header, index) => {
-            const text = header.textContent.trim().replace(/\n/g, '').replace(/Filter\.\.\./g, '');
-            rows.forEach(row => {
-                if (row.cells[index]) {
-                    row.cells[index].setAttribute('data-label', text);
-                }
-            });
+        const messages = document.querySelectorAll('#message-container .alert');
+        messages.forEach((msg, index) => {
+            setTimeout(() => {
+                msg.classList.add('show');
+            }, 100 * index);
+            setTimeout(() => {
+                msg.classList.remove('show');
+                setTimeout(() => {
+                    msg.remove();
+                }, 500);
+            }, 4000 + 100 * index);
         });
     });
+</script>
 
+<!-- Table Filter and Select Scripts -->
+<script>
     function filterColumn(colIndex, query) {
         const table = document.querySelector("#leadTable");
         const rows = table.querySelectorAll("tbody tr");
         const filter = query.toLowerCase();
         let visibleCount = 0;
-
         rows.forEach(row => {
-            const cell = row.cells[colIndex - 1];
+            const cell = row.cells[colIndex];
             if (cell) {
                 const text = cell.textContent.toLowerCase();
                 const match = text.includes(filter);
@@ -158,17 +186,23 @@
                 if (match) visibleCount++;
             }
         });
-
         document.getElementById("filteredCount").textContent = visibleCount;
     }
 
     function resetFilters() {
         const inputs = document.querySelectorAll('#leadTable thead input');
-        inputs.forEach(input => {
+        inputs.forEach((input, index) => {
             input.value = '';
-            const colIndex = Array.from(input.parentElement.parentElement.cells).indexOf(input.parentElement) + 1;
-            filterColumn(colIndex, '');
+            filterColumn(index, '');
+        });
+    }
+
+    function toggleSelectAll(source) {
+        const checkboxes = document.querySelectorAll('input[name="lead_ids"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = source.checked;
         });
     }
 </script>
+
 {% endblock %}

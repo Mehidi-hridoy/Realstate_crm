@@ -261,6 +261,20 @@ body {
         color: #6c757d;
     }
 
+#message-container {
+  position: relative;
+  min-height: 50px; /* reserve space so table won't jump */
+}
 
+.alert {
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  /* Add colors for different alert types if you want */
+}
 
-
+.alert.show {
+  opacity: 1;
+}

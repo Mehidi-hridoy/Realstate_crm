@@ -16,3 +16,17 @@ class AddLeadForm(forms.ModelForm):
             'modified_at': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'next_followup_date': forms.DateInput(attrs={'type': 'date'}),
         }
+
+
+from django.contrib.auth.models import User
+
+class LeadTransferForm(forms.Form):
+    leads = forms.ModelMultipleChoiceField(
+        queryset=Lead.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        label="Select Leads to Transfer"
+    )
+    new_owner = forms.ModelChoiceField(
+        queryset=User.objects.all(),
+        label="Select New Owner"
+    )

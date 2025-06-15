@@ -1,7 +1,6 @@
 from .models import Lead, LeadChangeLog 
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
 from .forms import AddLeadForm  
 from .models import Lead
 from django.contrib import messages
@@ -14,20 +13,78 @@ from collections import defaultdict
 from django.utils.timezone import localtime
 from django.urls import reverse
 from django.utils.http import urlencode
-from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.models import User
+import pandas as pd
+from django.http import HttpResponse
+from io import BytesIO
 
 
+from django.contrib.auth.models import User
 @login_required
 def leads_list(request):
-    if request.user.is_superuser:
-        leads = Lead.objects.filter(converted_to_client=False)
-    else:
-        leads = Lead.objects.filter(created_by=request.user)
+    leads = Lead.objects.all()
+    users=User.objects.all()
+    total_leads = leads.count()
+    users = User.objects.all()  # Pass this to the template
 
     return render(request, 'lead/leads_list.html', {
         'leads': leads,
-        'total_leads': leads.count(),
+        'total_leads': total_leads,
+        'users': users,
     })
+
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)  # Only allow superusers to transfer leads
+def lead_transfer_view(request):
+    if request.method == 'POST':
+        lead_ids = request.POST.getlist('lead_ids')
+        new_owner_id = request.POST.get('new_owner')
+
+        if not lead_ids or not new_owner_id:
+            messages.warning(request, "Please select at least one lead and a new owner.")
+            return redirect('lead:leads_list')
+
+        try:
+            new_owner = User.objects.get(id=new_owner_id)
+        except User.DoesNotExist:
+            messages.error(request, "Selected user does not exist.")
+            return redirect('lead:leads_list')
+
+        leads_updated = Lead.objects.filter(id__in=lead_ids).update(created_by=new_owner)
+        messages.success(request, f"✅ Successfully {leads_updated} leads transferred from {new_owner} to user: {new_owner.username}.")
+        return redirect('lead:leads_list')
+
+    return redirect('lead:leads_list')
+
+
+
+
+@login_required 
+def lead_download_excel(request):
+    leads = Lead.objects.all()
+    df = pd.DataFrame(list(leads))
+
+    # Create a BytesIO buffer
+    buffer = BytesIO()
+
+    # Write Excel to the buffer
+    with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Leads')
+
+    # Seek to the beginning of the stream
+    buffer.seek(0)
+
+    # Create response with correct headers
+    response = HttpResponse(
+        buffer,
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename=All_Leads.xlsx'
+
+    return response
 
 
 
@@ -101,16 +158,6 @@ def convert_to_client(request, pk):
     return redirect('leads_list')
 
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse
-from django.utils.timezone import now, localtime
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from collections import defaultdict
-from datetime import datetime, date
-from urllib.parse import urlencode
-
-from .models import Lead, LeadChangeLog  # Adjust if your model import path is different
 
 
 @login_required
@@ -257,36 +304,4 @@ def lead_followup_and_history(request, pk):
 
 
 
-def team_performance(request):
-    # Count leads by stage
-    stage_counts = Lead.objects.values('stage').annotate(count=Count('id'))
-    stage_dict = {entry['stage']: entry['count'] for entry in stage_counts}
 
-    # Total and converted leads
-    total_leads = Lead.objects.count()
-    converted_leads = Lead.objects.filter(stage='Won').count()
-
-    # Team performance
-    team_stats = []
-    User = get_user_model()
-    users = User.objects.all()
-
-    for user in users:
-        user_leads = Lead.objects.filter(assigned_to=user)
-        user_total = user_leads.count()
-        user_converted = user_leads.filter(stage='Won').count()
-
-        team_stats.append({
-            'name': f"{user.first_name} {user.last_name}".strip() or user.username,
-            'total': user_total,
-            'converted': user_converted,
-        })
-
-    context = {
-        'stage_counts': stage_dict,
-        'total_leads': total_leads,
-        'converted_leads': converted_leads,
-        'team_stats': team_stats,
-    }
-
-    return render(request, 'lead/team_performance.html', context)

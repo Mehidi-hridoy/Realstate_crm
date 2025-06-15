@@ -1,0 +1,44 @@
+{% extends 'crm/base.html' %}
+
+{% block title %}Transfer Leads{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Transfer Leads</h2>
+        <a href="{% url 'lead:leads_list' %}" class="btn btn-secondary">Back to Lead List</a>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="table-responsive rounded-3 border shadow-sm">
+            <table class="table table-bordered mb-3">
+                <thead class="table-light">
+                    <tr>
+                        {% for field in form %}
+                        <th class="align-middle">{{ field.label }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        {% for field in form %}
+                        <td class="align-middle">
+                            {{ field }}
+                            {% if field.help_text %}
+                                <small class="form-text text-muted">{{ field.help_text }}</small>
+                            {% endif %}
+                            {% if field.errors %}
+                                <div class="text-danger">{{ field.errors }}</div>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Transfer Leads</button>
+    </form>
+</div>
+{% endblock %}
